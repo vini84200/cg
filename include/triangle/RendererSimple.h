@@ -15,14 +15,13 @@ class RendererSimple : public Renderer {
 public:
     RendererSimple();
 
-    void render() override;
-
+    void render(Scene *scene, Camera *camera) override;
 private:
 
     std::shared_ptr<Camera> camera;
-    std::vector<Object>* objects;
-    std::vector<void*>* shaders;
-    
+    GLuint program;
+
+    void renderObject(std::shared_ptr<Object> object);
 };
 
 

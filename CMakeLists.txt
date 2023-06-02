@@ -11,7 +11,7 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
 endif()
 
 
-add_executable(triangle src/main.cpp src/LoadShaders.cpp src/Window.cpp include/triangle/Window.h)
+add_executable(triangle src/main.cpp src/LoadShaders.cpp src/Window.cpp include/triangle/Window.h src/Object.cpp src/Renderer.cpp include/triangle/Renderer.h src/Camera.cpp include/triangle/Camera.h src/RendererSimple.cpp include/triangle/RendererSimple.h src/RenderTarget.cpp include/triangle/RenderTarget.h src/Scene.cpp include/Scene.h src/TriangleObject.cpp src/TriangleObject.h)
 target_include_directories(triangle PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(triangle PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/triangle)
 
@@ -29,18 +29,21 @@ message(STATUS "EXT_DIR: ${EXT_DIR}")
 #find_package(OpenGL REQUIRED)
 
 # GLAD
-add_library(glad ${EXT_DIR}/include/glad/glad.h ${EXT_DIR}/glad/glad.c)
+add_library(glad ${EXT_DIR}/include/glad/glad.h ${EXT_DIR}/glad/glad.c src/MeshBundle.cpp include/triangle/MeshBundle.h)
 target_include_directories(glad PUBLIC ${EXT_DIR}/include)
 
 # GLFW
 add_subdirectory("${EXT_DIR}/glfw")
 message(STATUS "GLFW3_INCLUDE_DIR: ${GLFW3_INCLUDE_DIR}")
 
+# GLM
+add_subdirectory("${EXT_DIR}/glm")
+
 if (WIN32)
-    target_link_libraries(${PROJECT_NAME} PUBLIC glad glfw)
+    target_link_libraries(${PROJECT_NAME} PUBLIC glad glfw glm)
 
 else()
-    target_link_libraries(${PROJECT_NAME} PUBLIC glad glfw)
+    target_link_libraries(${PROJECT_NAME} PUBLIC glad glfw glm)
 endif()
 
 

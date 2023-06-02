@@ -4,6 +4,8 @@
 
 #include <cstdio>
 #include <stdexcept>
+#include "RendererSimple.h"
+#include "TriangleObject.h"
 #include "Window.h"
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
@@ -45,6 +47,10 @@ Window::Window() {
 
     glfwSwapInterval(1); // Enable vsync
 
+    renderer_ = std::make_unique<RendererSimple>();
+    camera_ = std::make_unique<Camera>();
+    scene_ = std::make_unique<Scene>();
+
 }
 
 Window::~Window() {
@@ -65,47 +71,7 @@ void Window::run() {
 }
 
 void Window::initialize() {
-    printf("Initializing...\n");
-    // Create vertex array object
-    glGenVertexArrays( NumVAOs, vertexArrayIds_ );
-    glBindVertexArray( vertexArrayIds_[Triangles] );
-
-    ShaderInfo  shaders[] =
-            {
-                    { GL_VERTEX_SHADER, "assets/shaders/triangles.vert" },
-                    { GL_FRAGMENT_SHADER, "assets/shaders/triangles.frag" },
-                    { GL_NONE, nullptr }
-            };
-
-    GLuint program = LoadShaders( shaders );
-    glUseProgram( program );
-
-    GLfloat  vertices[NumVertices][2] = {
-            { -0.90f, -0.90f }, {  0.90, -0.90f }, { -0.f,  0.85f },  // Triangle 1
-    };
-
-    glGenBuffers( NumBuffers, bufferIds_ );
-    glBindBuffer( GL_ARRAY_BUFFER, bufferIds_[ArrayBuffer] );
-    glBufferData( GL_ARRAY_BUFFER, sizeof(vertices),
-                  vertices, GL_STATIC_DRAW );
-
-    glVertexAttribPointer( vPosition, 2, GL_FLOAT,
-                           GL_FALSE, 0, BUFFER_OFFSET(0) );
-    glEnableVertexAttribArray( vPosition );
-
-    GLfloat colors[NumVertices][3] = {
-            { 1, 0, 0}, { 0, 1, 0}, { 0, 0, 1},
-            { 1, 1, 0}, { 1, 0, 1}, { 0, 1, 1}
-    };
-    glBindBuffer( GL_ARRAY_BUFFER, bufferIds_[ColorBuffer] );
-    glBufferData( GL_ARRAY_BUFFER, sizeof(colors),
-                  colors, GL_STATIC_DRAW );
-
-    glVertexAttribPointer( vColor, 3, GL_FLOAT,
-                           GL_FALSE, 0, BUFFER_OFFSET(0) );
-    glEnableVertexAttribArray( vColor );
-
-    printf("Initialized\n");
+    scene_->addObject(std::make_unique<TriangleObject>());
 }
 
 void Window::update() {
@@ -115,8 +81,7 @@ void Window::update() {
 void Window::render() {
     glClear( GL_COLOR_BUFFER_BIT );
 
-    glBindVertexArray( vertexArrayIds_[Triangles] );
-    glDrawArrays( GL_TRIANGLES, 0, NumVertices );
+    renderer_->render(scene_.get(), camera_.get());
 
     glfwSwapBuffers(window_);
     glfwPollEvents();

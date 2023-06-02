@@ -8,12 +8,17 @@
 #include "glm/glm.hpp"
 
 class Camera {
+
+
+    glm::mat4 getViewMatrix();
+
+public:
     Camera();
 
-    protected:
-
+protected:
     glm::vec4 pos;
     glm::vec4 forward;
+
     
 };
 

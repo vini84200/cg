@@ -6,6 +6,23 @@
 #define TRIANGLE_OBJECT_H
 
 #include <glm/glm.hpp>
+#include "glad/glad.h"
+
+enum VAO_IDs {
+    Triangles, NumVAOs
+};
+enum Buffer_IDs {
+    ArrayBuffer, ColorBuffer, NumBuffers
+};
+enum Attrib_IDs {
+    vPosition = 0, vColor = 1
+};
+
+enum IndecesType {
+    TriangleType, TriangleStripType, TriangleFanType
+};
+
+#define BUFFER_OFFSET(a) ((void*)(a))
 
 /**
  * This class represents an object in the scene.
@@ -13,13 +30,30 @@
  */
 class Object {
 public:
-   Object();
+    Object();
 
-   glm::mat4 getTransformMatrix();
+    glm::mat4 getTransformMatrix();
 
-   private:
+    void setTransformMatrix(const glm::mat4 &transformMatrix);
 
+    GLuint *getVaOs();
 
+    GLuint *getBuffers();
 
+    GLuint getNumVertices() const;
+
+    void setNumVertices(GLuint numVertices);
+
+    IndecesType getIndecesType() const;
+
+    void setIndecesType(IndecesType indecesType);
+
+private:
+    glm::mat4 transformMatrix;
+    GLuint VAOs[NumVAOs];
+    GLuint Buffers[NumBuffers];
+    GLuint numVertices;
+    IndecesType indecesType;
 };
+
 #endif //TRIANGLE_OBJECT_H

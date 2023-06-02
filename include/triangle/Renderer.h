@@ -9,21 +9,17 @@
 #include <string>
 #include "Camera.h"
 #include "Object.h"
+#include "Scene.h"
 
 /**
  * This is the base class for all renderers.
  * It defines the interface that all renderers must implement.
  */
 class Renderer {
-    virtual std::string getRendererName() = 0;
-    virtual void render() = 0;
-    virtual void setCamera( Camera* camera ) = 0;
-    virtual void setObjects( Object* objects ) = 0;
-    virtual void setShaders( void* shaders ) = 0;
-
-    virtual int getRenderTargetsCount() = 0;
-
-    virtual void setRenderTargets( void* renderTargets ) = 0;
+public:
+    virtual void render(
+            Scene *scene,
+            Camera *camera) = 0;
 };
 
 

@@ -5,15 +5,16 @@
 #ifndef TRIANGLE_WINDOW_H
 #define TRIANGLE_WINDOW_H
 
+#include "Camera.h"
+#include "Object.h"
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
+#include "Renderer.h"
+#include <memory>
+#include <vector>
 
-enum VAO_IDs { Triangles, NumVAOs };
-enum Buffer_IDs { ArrayBuffer, ColorBuffer, NumBuffers };
-enum Attrib_IDs { vPosition = 0, vColor = 1 };
 const GLuint NumVertices = 6;
 
-#define BUFFER_OFFSET(a) ((void*)(a))
 
 /**
  * This class is a wrapper for GLFWwindow.
@@ -54,15 +55,9 @@ private:
 
     GLFWwindow* window_; ///< The GLFW window
 
-    // TODO: This is temporary and the buffers should be moved to a new class responsible for rendering, when this gets
-    //  complex enough.
-
-    /// OpenGL VAOs
-    GLuint vertexArrayIds_[VAO_IDs::NumVAOs];
-
-    /// OpenGL Buffers
-    GLuint bufferIds_[Buffer_IDs::NumBuffers];
-
+    std::unique_ptr<Renderer> renderer_; ///< The renderer
+    std::unique_ptr<Camera> camera_; ///< The camera
+    std::unique_ptr<Scene> scene_; ///< The scene
 };
 
 
