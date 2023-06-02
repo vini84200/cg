@@ -20,6 +20,7 @@ public:
     virtual void render(
             Scene *scene,
             Camera *camera) = 0;
+    virtual void renderImGui() = 0;
 };
 
 

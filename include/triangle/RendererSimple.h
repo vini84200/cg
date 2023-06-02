@@ -16,6 +16,9 @@ public:
     RendererSimple();
 
     void render(Scene *scene, Camera *camera) override;
+
+    void renderImGui() override;
+
 private:
 
     std::shared_ptr<Camera> camera;

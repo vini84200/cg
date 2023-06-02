@@ -9,7 +9,6 @@
 #include "Window.h"
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
-#include "loadShader/LoadShaders.h"
 
 Window::Window() {
     int success = glfwInit();
@@ -50,7 +49,6 @@ Window::Window() {
     renderer_ = std::make_unique<RendererSimple>();
     camera_ = std::make_unique<Camera>();
     scene_ = std::make_unique<Scene>();
-
 }
 
 Window::~Window() {
@@ -72,6 +70,9 @@ void Window::run() {
 
 void Window::initialize() {
     scene_->addObject(std::make_unique<TriangleObject>());
+
+    imguiPlugin_.init();
+    imguiPlugin_.setWindow(this);
 }
 
 void Window::update() {
@@ -82,6 +83,7 @@ void Window::render() {
     glClear( GL_COLOR_BUFFER_BIT );
 
     renderer_->render(scene_.get(), camera_.get());
+    imguiPlugin_.render();
 
     glfwSwapBuffers(window_);
     glfwPollEvents();
@@ -96,3 +98,20 @@ void Window::onError(int error, const char *description) {
     throw std::runtime_error("GLFW Error");
 }
 
+GLFWwindow *Window::getWindow() const {
+    return window_;
+}
+
+void Window::setWindow(GLFWwindow *window) {
+    window_ = window;
+}
+
+void Window::renderImGuiMainWindow() {
+    ImGui::Begin("Triangle");
+    ImGui::Text("Hello, world!");
+    camera_->renderImGui();
+    scene_->renderImGui();
+    renderer_->renderImGui();
+
+    ImGui::End();
+}

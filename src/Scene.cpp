@@ -4,6 +4,7 @@
 
 #include <stdexcept>
 #include "Scene.h"
+#include "imgui.h"
 
 Scene::Scene() {
 
@@ -20,4 +21,18 @@ void Scene::removeObject(std::shared_ptr<Object> object) {
 
 std::vector<std::shared_ptr<Object>> Scene::getObjects() {
     return objects;
+}
+
+void Scene::renderImGui() {
+    ImGui::Begin( "Scene" );
+    ImGui::Text( "Objects: %d", objects.size() );
+    if (ImGui::CollapsingHeader("Objects")) {
+        for (auto &object : objects) {
+            if (ImGui::TreeNode(object->getName().c_str())) {
+                object->renderImGui();
+                ImGui::TreePop();
+            }
+        }
+    }
+    ImGui::End();
 }

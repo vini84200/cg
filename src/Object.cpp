@@ -35,3 +35,7 @@ IndecesType Object::getIndecesType() const {
 void Object::setIndecesType(IndecesType indecesType) {
     Object::indecesType = indecesType;
 }
+
+std::string Object::getName() const {
+
+}

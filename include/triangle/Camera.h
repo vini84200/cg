@@ -14,12 +14,19 @@ class Camera {
 
 public:
     Camera();
+    void renderImGui();
 
 protected:
     glm::vec4 pos;
     glm::vec4 forward;
 
-    
+    float fov;
+    float near;
+    float far;
+    float aspectRatio;
+
+
+    glm::mat4 getProjectionMatrix();
 };
 
 

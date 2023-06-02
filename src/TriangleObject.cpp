@@ -40,3 +40,13 @@ TriangleObject::TriangleObject() {
 
     printf("Initialized\n");
 }
+
+void TriangleObject::renderImGui() {
+    ImGui::Begin("Triangle");
+    ImGui::Text("This is some useful text.");
+    ImGui::End();
+}
+
+std::string TriangleObject::getName() const {
+    return "Triangle";
+}

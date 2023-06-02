@@ -11,6 +11,10 @@
 class TriangleObject : public Object{
 public:
     TriangleObject();
+
+    void renderImGui() override;
+
+    std::string getName() const override;
 };
 
 

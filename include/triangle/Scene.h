@@ -18,6 +18,7 @@ public:
     void removeObject( std::shared_ptr<Object> object );
 
     std::vector<std::shared_ptr<Object>> getObjects();
+    void renderImGui();
 
 private:
     std::vector<std::shared_ptr<Object>> objects;

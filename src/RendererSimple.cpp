@@ -40,3 +40,7 @@ void RendererSimple::renderObject(std::shared_ptr<Object> object) {
     // Unbind the VAO
     glBindVertexArray(0);
 }
+
+void RendererSimple::renderImGui() {
+
+}

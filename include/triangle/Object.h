@@ -6,6 +6,7 @@
 #define TRIANGLE_OBJECT_H
 
 #include <glm/glm.hpp>
+#include <string>
 #include "glad/glad.h"
 
 enum VAO_IDs {
@@ -47,6 +48,8 @@ public:
     IndecesType getIndecesType() const;
 
     void setIndecesType(IndecesType indecesType);
+    virtual std::string getName() const;
+    virtual void renderImGui() = 0;
 
 private:
     glm::mat4 transformMatrix;

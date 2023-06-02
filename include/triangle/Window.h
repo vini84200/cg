@@ -6,6 +6,7 @@
 #define TRIANGLE_WINDOW_H
 
 #include "Camera.h"
+#include "ImGuiPlugin.h"
 #include "Object.h"
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
@@ -40,6 +41,13 @@ public:
      */
     void run();
 
+    /**
+     * Render the ImGui GUI.
+     */
+    void renderImGuiMainWindow();
+
+
+    bool show_gui_;
 private:
     void initialize();
     void update();
@@ -55,9 +63,17 @@ private:
 
     GLFWwindow* window_; ///< The GLFW window
 
-    std::unique_ptr<Renderer> renderer_; ///< The renderer
+    std::unique_ptr<Renderer> renderer_;
+public:
+    GLFWwindow *getWindow() const;
+
+    void setWindow(GLFWwindow *window);
+
+private:
+    ///< The renderer
     std::unique_ptr<Camera> camera_; ///< The camera
     std::unique_ptr<Scene> scene_; ///< The scene
+    ImGuiPlugin imguiPlugin_; ///< The ImGui plugin
 };
 
 
