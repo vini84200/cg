@@ -35,7 +35,9 @@ private:
     void renderObject(std::shared_ptr<Object> object);
 
     bool backFaceCulling_ = true;
-    bool ccw_;
+    bool ccw_ = false;
+    bool colorOverride_ = false;
+    glm::vec3 newColor = glm::vec3(1, 1, 1);
 };
 
 

@@ -114,7 +114,7 @@ void Window::update(float deltatime) {
 }
 
 void Window::render() {
-    glClear( GL_COLOR_BUFFER_BIT );
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
     renderer_->render(scene_.get(), camera_.get());
     imguiPlugin_.render();
@@ -141,13 +141,10 @@ void Window::setWindow(GLFWwindow *window) {
 }
 
 void Window::renderImGuiMainWindow() {
-    ImGui::Begin("Triangle");
-    ImGui::Text("Hello, world!");
     camera_->renderImGui();
     scene_->renderImGui();
     renderer_->renderImGui();
 
-    ImGui::End();
 }
 
 void Window::onKeyPressed(int key, int scancode, int action, int mods) {

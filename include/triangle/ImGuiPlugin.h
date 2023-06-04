@@ -23,7 +23,7 @@ public:
 
     void setWindow(Window* window);
 
-    bool demo_;
+    bool demo_ = false;
     Window* window_;
 
     void update(float dt);

@@ -5,6 +5,7 @@
 #include "ObjectFromFileIn.h"
 #include "Object.h"
 #include "imgui.h"
+#include <clocale>
 #include <complex>
 #include <cstdio>
 #include <vector>
@@ -14,6 +15,8 @@ ObjectFromFileIn::ObjectFromFileIn(std::string path) {
     printf("path: %s\n", path.c_str());
     this->path = path;
     this->name = path.substr(path.find_last_of("/\\") + 1);
+
+    setlocale(LC_ALL, "en_US.UTF-8");
 
     FILE *fp = fopen(path.c_str(), "r");
     char ch = 'a';
@@ -46,6 +49,8 @@ ObjectFromFileIn::ObjectFromFileIn(std::string path) {
         assert(success_ambient == 3);
 
         int success_diffuse = fscanf(fp, "diffuse color %s %s %s \n", first_aux, snd_aux, thrd_aux);
+        printf("stof: %f %s\n", std::stof(first_aux), first_aux);
+        printf("stof: %f\n", std::stof("230.5"));
         m.diffuse.x = std::stof(first_aux);
         m.diffuse.y = std::stof(snd_aux);
         m.diffuse.z = std::stof(thrd_aux);
@@ -79,19 +84,18 @@ ObjectFromFileIn::ObjectFromFileIn(std::string path) {
 
     std::vector<glm::vec3> vertices;
     std::vector<glm::vec3> normals;
-    int material_index[num_triangles * 3];
     GLfloat face_normals[num_triangles][3];
 
+    char *x = new char[100];
+    char *y = new char[100];
+    char *z = new char[100];
+    char *nx = new char[100];
+    char *ny = new char[100];
+    char *nz = new char[100];
+    char *material = new char[100];
     for (int i = 0; i < num_triangles; i++) {
-        glm::vec3 vertex, normal;
-        char *x = new char[100];
-        char *y = new char[100];
-        char *z = new char[100];
-        char *nx = new char[100];
-        char *ny = new char[100];
-        char *nz = new char[100];
-        char *material = new char[100];
-
+        glm::vec3 vertex, normal, color;
+        int material_index = -1;
         int v;
         for (int j = 0; j < 3; j++) {
             int success = fscanf(fp, "v%d %s %s %s %s %s %s %s\n",
@@ -107,27 +111,37 @@ ObjectFromFileIn::ObjectFromFileIn(std::string path) {
             normal.x = std::stof(nx);
             normal.y = std::stof(ny);
             normal.z = std::stof(nz);
-            // TODO: im overwriting the normals here, but i should be averaging them
-            normal = {1.f, 0.f, 0.f};
-            material_index[i * 3 + j] = std::stoi(material);
+
             vertices.push_back(vertex);
             normals.push_back(normal);
+            if (material_index == -1)
+                material_index = std::stoi(material);
+            else
+                assert(material_index == std::stoi(material));
         }
         int success = fscanf(fp, "face normal %*s %*s %*s\n");
-        delete[] x;
-        delete[] y;
-        delete[] z;
-        delete[] nx;
-        delete[] ny;
-        delete[] nz;
-        delete[] material;
-//        assert(success == 3);
+
+        if (callSpans.empty() || callSpans.back().materialIndex != material_index) {
+            CallSpan span (i*3, 3, material_index);
+            callSpans.push_back(span);
+        }
+        else {
+            callSpans.back().count += 3;
+        }
+
     }
+    delete[] x;
+    delete[] y;
+    delete[] z;
+    delete[] nx;
+    delete[] ny;
+    delete[] nz;
+    delete[] material;
 
     printf("Vertices[0]: %f %f %f\n", vertices[0].x, vertices[0].y, vertices[0].z);
     printf("Vertex size: %d\n", vertices.size());
-    printf("normals[0]: %f %f %f\n", normals[0].x, normals[0].y, normals[0].z);
-    printf("Normal size: %d\n", normals.size());
+    printf("Difuse of first material: %f %f %f\n", materials[0].diffuse.x, materials[0].diffuse.y,
+           materials[0].diffuse.z);
 
 
     fclose(fp);
@@ -143,12 +157,12 @@ ObjectFromFileIn::ObjectFromFileIn(std::string path) {
     glEnableVertexAttribArray( vPosition );
 
     glBindBuffer( GL_ARRAY_BUFFER, getBuffers()[ColorBuffer] );
-    glBufferData( GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3),
-                    normals.data(), GL_STATIC_DRAW );
+    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3),
+                 normals.data(), GL_STATIC_DRAW );
 
-    glVertexAttribPointer( vColor, 3, GL_FLOAT,
-                           GL_FALSE, 0, BUFFER_OFFSET(0) );
-    glEnableVertexAttribArray( vColor );
+    glVertexAttribPointer(vNormals, 3, GL_FLOAT,
+                          GL_FALSE, 0, BUFFER_OFFSET(0) );
+    glEnableVertexAttribArray(vNormals );
 
 }
 
@@ -174,4 +188,14 @@ std::string ObjectFromFileIn::getName() const {
 
 void ObjectFromFileIn::update(float dt) {
 
+}
+
+std::vector<CallSpan> ObjectFromFileIn::getCallSpan() {
+    return callSpans;
+}
+
+Material *ObjectFromFileIn::getMaterial(int index) {
+    if (index >= materials.size())
+        return nullptr;
+    return &materials[index];
 }

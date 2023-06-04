@@ -7,6 +7,7 @@
 
 
 #include "Object.h"
+#include "ObjectFromFileIn.h"
 
 class TriangleObject : public Object{
 public:
@@ -17,6 +18,12 @@ public:
     std::string getName() const override;
 
     void update(float dt) override;
+
+    Material *getMaterial(int index) override;
+
+    std::vector<CallSpan> getCallSpan() override;
+
+    Material material_;
 };
 
 

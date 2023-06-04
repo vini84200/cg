@@ -4,10 +4,8 @@
 
 #include "Camera.h"
 #include "glm/ext/matrix_transform.hpp"
-#include "glm/fwd.hpp"
 #include "imgui.h"
 #include "GLFW/glfw3.h"
-#include "../external/glfw/deps/linmath.h"
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -17,7 +15,7 @@ Camera::Camera() {
     forward = glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
     aspectRatio = 9.f / 16.f;
     near = 0.1f;
-    far = 1000.f;
+    far = 100000.f;
 }
 
 glm::mat4 Camera::getViewMatrix() {

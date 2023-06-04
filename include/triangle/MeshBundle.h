@@ -10,7 +10,7 @@
 
 enum VAO_IDs { Triangles, NumVAOs };
 enum Buffer_IDs { ArrayBuffer, ColorBuffer, NumBuffers };
-enum Attrib_IDs { vPosition = 0, vColor = 1 };
+enum Attrib_IDs { vPosition = 0, vNormals = 1 };
 
 class MeshBundle {
 public:

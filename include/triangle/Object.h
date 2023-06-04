@@ -7,6 +7,7 @@
 
 #include <glm/glm.hpp>
 #include <string>
+#include <vector>
 #include "glad/glad.h"
 
 enum VAO_IDs {
@@ -16,14 +17,33 @@ enum Buffer_IDs {
     ArrayBuffer, ColorBuffer, NumBuffers
 };
 enum Attrib_IDs {
-    vPosition = 0, vColor = 1
+    vPosition = 0, vNormals = 1
 };
 
 enum IndecesType {
     TriangleType, TriangleStripType, TriangleFanType
 };
 
+struct Material {
+    glm::vec3 ambient;
+    glm::vec3 diffuse;
+    glm::vec3 specular;
+    float shine;
+
+    Material(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, float shine) : ambient(ambient), diffuse(diffuse),
+                                                                                      specular(specular), shine(shine) {};
+    Material() = default;
+};
+
 #define BUFFER_OFFSET(a) ((void*)(a))
+
+struct CallSpan {
+    int start;
+    int count;
+    int materialIndex;
+
+    CallSpan(int start, int count, int materialIndex) : start(start), count(count), materialIndex(materialIndex) {}
+};
 
 /**
  * This class represents an object in the scene.
@@ -51,6 +71,8 @@ public:
     virtual std::string getName() const;
     virtual void renderImGui() = 0;
     virtual void update(float dt) = 0;
+    virtual std::vector<CallSpan> getCallSpan() = 0;
+    virtual Material *getMaterial(int index) = 0;
 
 private:
     glm::mat4 transformMatrix{};

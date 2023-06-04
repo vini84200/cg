@@ -3,10 +3,14 @@
 //
 
 #include "TriangleObject.h"
+#include "ObjectFromFileIn.h"
 #include "Window.h"
 #include "imgui.h"
+#include <vector>
 
-TriangleObject::TriangleObject() {
+TriangleObject::TriangleObject()
+: material_(glm::vec3(1, 1, 1), glm::vec3(1, 1, 1), glm::vec3(1, 1, 1), 1)
+{
     glGenVertexArrays( NumVAOs, getVaOs() );
     glBindVertexArray( getVaOs()[Triangles] );
 
@@ -27,17 +31,17 @@ TriangleObject::TriangleObject() {
                            GL_FALSE, 0, BUFFER_OFFSET(0) );
     glEnableVertexAttribArray( vPosition );
 
-    GLfloat colors[NumVertices][3] = {
+    GLfloat normals[NumVertices][3] = {
             { 1, 0, 0}, { 0, 1, 0}, { 0, 0, 1},
             { 1, 1, 0}, { 1, 0, 1}, { 0, 1, 1}
     };
     glBindBuffer( GL_ARRAY_BUFFER, getBuffers()[ColorBuffer] );
-    glBufferData( GL_ARRAY_BUFFER, sizeof(colors),
-                  colors, GL_STATIC_DRAW );
+    glBufferData(GL_ARRAY_BUFFER, sizeof(normals),
+                 normals, GL_STATIC_DRAW );
 
-    glVertexAttribPointer( vColor, 3, GL_FLOAT,
-                           GL_FALSE, 0, BUFFER_OFFSET(0) );
-    glEnableVertexAttribArray( vColor );
+    glVertexAttribPointer(vNormals, 3, GL_FLOAT,
+                          GL_FALSE, 0, BUFFER_OFFSET(0) );
+    glEnableVertexAttribArray(vNormals );
 
     printf("Initialized\n");
 }
@@ -55,4 +59,14 @@ std::string TriangleObject::getName() const {
 
 void TriangleObject::update(float dt) {
 
+}
+
+std::vector<CallSpan> TriangleObject::getCallSpan() {
+    std::vector<CallSpan> callSpans;
+    callSpans.emplace_back(0, 3, 0);
+    return callSpans;
+}
+
+Material *TriangleObject::getMaterial(int index) {
+    return &material_;
 }

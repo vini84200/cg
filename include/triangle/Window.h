@@ -47,7 +47,7 @@ public:
     void renderImGuiMainWindow();
 
 
-    bool show_gui_;
+    bool show_gui_ = true;
 private:
     void initialize();
     void update(float deltatime);
