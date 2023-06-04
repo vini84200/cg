@@ -167,19 +167,20 @@ ObjectFromFileIn::ObjectFromFileIn(std::string path) {
 }
 
 void ObjectFromFileIn::renderImGui() {
-    ImGui::Begin("ObjectFromFileIn");
-    ImGui::Text("name: %s", name.c_str());
-    ImGui::Text("path: %s", path.c_str());
-    ImGui::Text("material_count: %d", material_count);
-    ImGui::Text("Triangles: %d", getNumVertices() / 3);
-    if (ImGui::BeginChild("Vertices", ImVec2(0, 300), true)) {
+    if (ImGui::BeginChild("ObjectFromFileIn")) {
+        ImGui::Text("name: %s", name.c_str());
+        ImGui::Text("path: %s", path.c_str());
+        ImGui::Text("material_count: %d", material_count);
+        ImGui::Text("draw_call_count: %zu", callSpans.size());
+        ImGui::Text("Triangles: %d", getNumVertices() / 3);
+        if (ImGui::BeginChild("Vertices")) {
 //        for (int i = 0; i < getNumVertices(); i++) {
 //            ImGui::Text("v%d: %f %f %f", i, getVertices()[i].x, getVertices()[i].y, getVertices()[i].z);
 //        }
+            ImGui::EndChild();
+        }
         ImGui::EndChild();
     }
-    ImGui::End();
-
 }
 
 std::string ObjectFromFileIn::getName() const {
