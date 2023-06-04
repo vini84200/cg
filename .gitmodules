@@ -4,3 +4,6 @@
 [submodule "external/imgui"]
 	path = external/imgui
 	url = git@github.com:ocornut/imgui.git
+[submodule "external/nfd-extended"]
+	path = external/nfd-extended
+	url = git@github.com:btzy/nativefiledialog-extended.git

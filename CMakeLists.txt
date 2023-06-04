@@ -11,7 +11,7 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
 endif()
 
 
-add_executable(triangle src/main.cpp src/LoadShaders.cpp src/Window.cpp include/triangle/Window.h src/Object.cpp src/Renderer.cpp include/triangle/Renderer.h src/Camera.cpp include/triangle/Camera.h src/RendererSimple.cpp include/triangle/RendererSimple.h src/RenderTarget.cpp include/triangle/RenderTarget.h src/Scene.cpp include/triangle/Scene.h src/TriangleObject.cpp src/TriangleObject.h src/ImGuiPlugin.cpp include/triangle/ImGuiPlugin.h)
+add_executable(triangle src/main.cpp src/LoadShaders.cpp src/Window.cpp include/triangle/Window.h src/Object.cpp src/Renderer.cpp include/triangle/Renderer.h src/Camera.cpp include/triangle/Camera.h src/RendererSimple.cpp include/triangle/RendererSimple.h src/RenderTarget.cpp include/triangle/RenderTarget.h src/Scene.cpp include/triangle/Scene.h src/TriangleObject.cpp src/TriangleObject.h src/ImGuiPlugin.cpp include/triangle/ImGuiPlugin.h src/ObjectFromFileIn.cpp src/ObjectFromFileIn.h)
 target_include_directories(triangle PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(triangle PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/triangle)
 
@@ -45,11 +45,14 @@ add_library(imgui ${IMGUI_DIR}/imgui.h ${IMGUI_DIR}/imgui.cpp ${IMGUI_DIR}/imgui
 include_directories(${IMGUI_DIR} ${IMGUI_DIR}/backends)
 target_link_libraries(imgui PUBLIC glfw)
 
+# NativeFileDialog Extended
+add_subdirectory("${EXT_DIR}/nfd-extended")
+
 #if (WIN32)
 #    target_link_libraries(${PROJECT_NAME} PUBLIC glad glfw glm imgui)
 
 #else()
-    target_link_libraries(${PROJECT_NAME} PUBLIC glad glfw glm imgui)
+    target_link_libraries(${PROJECT_NAME} PUBLIC glad glfw glm imgui nfd)
 #endif()
 
 

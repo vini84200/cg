@@ -15,6 +15,8 @@ public:
     void renderImGui() override;
 
     std::string getName() const override;
+
+    void update(float dt) override;
 };
 
 

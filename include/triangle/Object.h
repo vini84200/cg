@@ -31,7 +31,7 @@ enum IndecesType {
  */
 class Object {
 public:
-    Object();
+    Object() = default;
 
     glm::mat4 getTransformMatrix();
 
@@ -50,12 +50,13 @@ public:
     void setIndecesType(IndecesType indecesType);
     virtual std::string getName() const;
     virtual void renderImGui() = 0;
+    virtual void update(float dt) = 0;
 
 private:
-    glm::mat4 transformMatrix;
-    GLuint VAOs[NumVAOs];
-    GLuint Buffers[NumBuffers];
-    GLuint numVertices;
+    glm::mat4 transformMatrix{};
+    GLuint VAOs[NumVAOs]{};
+    GLuint Buffers[NumBuffers]{};
+    GLuint numVertices{};
     IndecesType indecesType;
 };
 

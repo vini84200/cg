@@ -21,6 +21,7 @@ public:
             Scene *scene,
             Camera *camera) = 0;
     virtual void renderImGui() = 0;
+    virtual void update(float dt) = 0;
 };
 
 

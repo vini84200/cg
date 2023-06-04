@@ -19,12 +19,23 @@ public:
 
     void renderImGui() override;
 
+    void update(float dt) override;
+
 private:
 
     std::shared_ptr<Camera> camera;
     GLuint program;
+    enum RenderType {
+        TRIANGLES,
+        LINES,
+        POINTS
+    };
+    RenderType renderType = TRIANGLES;
 
     void renderObject(std::shared_ptr<Object> object);
+
+    bool backFaceCulling_ = true;
+    bool ccw_;
 };
 
 

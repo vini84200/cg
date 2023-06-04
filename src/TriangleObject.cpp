@@ -4,6 +4,7 @@
 
 #include "TriangleObject.h"
 #include "Window.h"
+#include "imgui.h"
 
 TriangleObject::TriangleObject() {
     glGenVertexArrays( NumVAOs, getVaOs() );
@@ -13,8 +14,8 @@ TriangleObject::TriangleObject() {
     setNumVertices(numVertices);
     setIndecesType(TriangleType);
 
-    GLfloat  vertices[numVertices][2] = {
-            { -0.90f, -0.90f }, {  0.90, -0.90f }, { -0.f,  0.85f },  // Triangle 1
+    GLfloat  vertices[numVertices][3] = {
+            { -0.90f, -0.90f, 0.f }, {  0.90, -0.90f, 0.f }, { -0.f,  0.85f, 0.f },  // Triangle 1
     };
 
     glGenBuffers( NumBuffers, getBuffers() );
@@ -22,7 +23,7 @@ TriangleObject::TriangleObject() {
     glBufferData( GL_ARRAY_BUFFER, sizeof(vertices),
                   vertices, GL_STATIC_DRAW );
 
-    glVertexAttribPointer( vPosition, 2, GL_FLOAT,
+    glVertexAttribPointer( vPosition, 3, GL_FLOAT,
                            GL_FALSE, 0, BUFFER_OFFSET(0) );
     glEnableVertexAttribArray( vPosition );
 
@@ -42,11 +43,16 @@ TriangleObject::TriangleObject() {
 }
 
 void TriangleObject::renderImGui() {
-    ImGui::Begin("Triangle");
-    ImGui::Text("This is some useful text.");
-    ImGui::End();
+    if (ImGui::BeginChild("Triangle")) {
+        ImGui::Text("Hello from Triangle");
+        ImGui::EndChild();
+    }
 }
 
 std::string TriangleObject::getName() const {
     return "Triangle";
+}
+
+void TriangleObject::update(float dt) {
+
 }

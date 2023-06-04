@@ -19,6 +19,7 @@ public:
 
     std::vector<std::shared_ptr<Object>> getObjects();
     void renderImGui();
+    void update(float dt);
 
 private:
     std::vector<std::shared_ptr<Object>> objects;

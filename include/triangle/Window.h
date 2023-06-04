@@ -50,7 +50,7 @@ public:
     bool show_gui_;
 private:
     void initialize();
-    void update();
+    void update(float deltatime);
     void render();
     void terminate();
 
@@ -74,6 +74,16 @@ private:
     std::unique_ptr<Camera> camera_; ///< The camera
     std::unique_ptr<Scene> scene_; ///< The scene
     ImGuiPlugin imguiPlugin_; ///< The ImGui plugin
+    void onKeyPressed(int key, int scancode, int action, int mods);
+
+    void onWindowResized(int w, int h);
+
+    void onMouseButton(int button, int action, int mods);
+
+    void onMouseMove(double xpos, double ypos);
+
+    double lastX_;
+    double lastY_;
 };
 
 

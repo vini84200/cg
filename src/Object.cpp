@@ -4,9 +4,6 @@
 
 #include "Object.h"
 
-Object::Object() {
-
-}
 
 void Object::setTransformMatrix(const glm::mat4 &transformMatrix) {
     Object::transformMatrix = transformMatrix;
@@ -38,4 +35,8 @@ void Object::setIndecesType(IndecesType indecesType) {
 
 std::string Object::getName() const {
 
+}
+
+glm::mat4 Object::getTransformMatrix() {
+    return glm::mat4();
 }

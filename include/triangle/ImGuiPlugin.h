@@ -25,6 +25,8 @@ public:
 
     bool demo_;
     Window* window_;
+
+    void update(float dt);
 };
 
 

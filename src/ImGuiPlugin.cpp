@@ -55,3 +55,7 @@ void ImGuiPlugin::shutdown() {
 void ImGuiPlugin::setWindow(Window *window) {
     window_ = window;
 }
+
+void ImGuiPlugin::update(float dt) {
+
+}
