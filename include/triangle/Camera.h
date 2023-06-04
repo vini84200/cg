@@ -37,6 +37,7 @@ protected:
     glm::vec3 movement_;
     bool is_orbital_ = true;
     bool is_mouse_pressed_ = false;
+    bool speed_up_;
 };
 
 

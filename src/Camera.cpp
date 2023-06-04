@@ -7,6 +7,7 @@
 #include "imgui.h"
 #include "GLFW/glfw3.h"
 
+#include <cstdio>
 #include <glm/gtc/matrix_transform.hpp>
 
 Camera::Camera() {
@@ -88,6 +89,24 @@ void Camera::onKey(int key, int scancode, int action, int mods) {
             forward = glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
         }
     }
+    if (key == GLFW_KEY_Q) {
+        if (action == GLFW_PRESS) {
+            is_orbital_ = !is_orbital_;
+        }
+    }
+    if (key == GLFW_KEY_E) {
+        if (action == GLFW_PRESS) {
+            movement_ = glm::vec3(0, 0, 0);
+        }
+    }
+    if (key == GLFW_KEY_LEFT_CONTROL) {
+        if (action == GLFW_PRESS) {
+            speed_up_ = true;
+        }
+        if (action == GLFW_RELEASE) {
+            speed_up_ = false;
+        }
+    }
 }
 
 void Camera::update(float dt) {
@@ -99,7 +118,8 @@ void Camera::update(float dt) {
                                   v.x, v.y, v.z, 0,
                                   w.x, w.y, w.z, 0,
                                   0, 0, 0, 1);
-    pos += toWorld * glm::vec4(movement_ * dt * 1.f, 0);
+    float speed = speed_up_ ? 500.f:100.f;
+    pos += toWorld * glm::vec4(movement_ * dt * speed, 0);
 
     if (is_orbital_) {
         forward = -glm::vec4(glm::normalize(glm::vec3(pos)), 0);
@@ -134,8 +154,9 @@ void Camera::onMouseMoveDelta(double dx, double dy) {
         if (is_orbital_) {
 
         } else {
-
-            forward = glm::rotate(glm::mat4(1), (float) dx * 0.01f, pra_cima) * forward;
+            float speed = speed_up_ ? 0.001f : 0.0005f;
+            forward = glm::rotate(glm::mat4(1), (float) dx * speed, pra_cima) * forward;
+            forward = glm::rotate(glm::mat4(1), (float) dy * speed, pro_lado) * forward;
         }
 
     }

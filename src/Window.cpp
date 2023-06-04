@@ -86,6 +86,7 @@ void Window::run() {
     while (!glfwWindowShouldClose(window_)) {
         float time = (float) glfwGetTime();
         float deltaTime = time - lastTime;
+        lastTime = time;
         if  (firstFrame) {
             deltaTime = 0.0f;
             firstFrame = false;
@@ -172,5 +173,5 @@ void Window::onMouseMove(double xpos, double ypos) {
     float dy = ypos - lastY_;
     lastX_ = xpos;
     lastY_ = ypos;
-    camera_->onMouseMoveDelta(xpos, ypos);
+    camera_->onMouseMoveDelta(dx, dy);
 }
