@@ -1,1 +1,1 @@
-Os arquivos do repositorio do GLFW(https://github.com/glfw/glfw) devem ser colocados em external/glfw.
+Os arquivos do repositorio das bibliotecas externas devem ser colocados nas suas pastas em external.
