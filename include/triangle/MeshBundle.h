@@ -8,8 +8,8 @@
 
 #include "glad/glad.h"
 
-enum VAO_IDs { Triangles, NumVAOs };
-enum Buffer_IDs { ArrayBuffer, ColorBuffer, NumBuffers };
+enum VAO_IDs { ModelSpace, NumVAOs };
+enum Buffer_IDs { PositionBuffer, NormalsBuffer, NumBuffers };
 enum Attrib_IDs { vPosition = 0, vNormals = 1 };
 
 class MeshBundle {

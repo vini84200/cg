@@ -1,19 +1,16 @@
 //
-// Created by vini84200 on 5/24/23.
+// Created by vini84200 on 6/16/23.
 //
 
-#ifndef TRIANGLE_RENDERERSIMPLE_H
-#define TRIANGLE_RENDERERSIMPLE_H
+#ifndef TRIANGLE_RENDERERCLOSETOGL_H
+#define TRIANGLE_RENDERERCLOSETOGL_H
 
 
-#include "Camera.h"
 #include "Renderer.h"
-#include <memory>
-#include <vector>
 
-class RendererSimple : public Renderer {
+class RendererCloseToGl : public Renderer {
 public:
-    RendererSimple();
+    RendererCloseToGl();
 
     void render(Scene *scene, Camera *camera) override;
 
@@ -43,4 +40,4 @@ private:
 };
 
 
-#endif //TRIANGLE_RENDERERSIMPLE_H
+#endif //TRIANGLE_RENDERERCLOSETOGL_H

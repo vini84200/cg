@@ -11,6 +11,8 @@
 #include "Window.h"
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
+#include "imgui.h"
+#include "RendererCloseToGl.h"
 
 Window::Window() {
     int success = glfwInit();
@@ -87,7 +89,7 @@ void Window::run() {
         float time = (float) glfwGetTime();
         float deltaTime = time - lastTime;
         lastTime = time;
-        if  (firstFrame) {
+        if (firstFrame) {
             deltaTime = 0.0f;
             firstFrame = false;
         } else {
@@ -115,7 +117,7 @@ void Window::update(float deltatime) {
 }
 
 void Window::render() {
-    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     renderer_->render(scene_.get(), camera_.get());
     imguiPlugin_.render();
@@ -146,9 +148,35 @@ void Window::renderImGuiMainWindow() {
     scene_->renderImGui();
     renderer_->renderImGui();
 
+    ImGui::Begin("Window");
+    ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
+    ImGui::Text("Time per frame: %.3f ms", 1000.0f / ImGui::GetIO().Framerate);
+    ImGui::Text("Current renderer: %s", renderer_->getName().c_str());
+    if (ImGui::Button("Change renderer")) {
+        ImGui::OpenPopup("Change renderer");
+    }
+    if (ImGui::BeginPopup("Change renderer")) {
+        if (ImGui::Selectable("Simple")) {
+            printf("Changing renderer to Simple\n");
+            renderer_ = std::make_unique<RendererSimple>();
+        }
+        if (ImGui::Selectable("CloseToGl")) {
+            printf("Changing renderer to CloseToGl\n");
+            renderer_ = std::make_unique<RendererCloseToGl>();
+        }
+        ImGui::EndPopup();
+    }
+    ImGui::End();
 }
 
 void Window::onKeyPressed(int key, int scancode, int action, int mods) {
+    ImGuiIO &io = ImGui::GetIO();
+
+    if (io.WantCaptureKeyboard) {
+        return;
+    }
+
+
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window_, true);
     if (key == GLFW_KEY_G && action == GLFW_PRESS)
@@ -163,11 +191,24 @@ void Window::onWindowResized(int w, int h) {
 }
 
 void Window::onMouseButton(int button, int action, int mods) {
+    ImGuiIO &io = ImGui::GetIO();
+
+    if (io.WantCaptureMouse) {
+        return;
+    }
+
     camera_->onMouseButton(button, action, mods);
 
 }
 
 void Window::onMouseMove(double xpos, double ypos) {
+
+    ImGuiIO &io = ImGui::GetIO();
+    if (io.WantCaptureMouse) {
+        return;
+    }
+
+
     camera_->onMouseMove(xpos, ypos);
     float dx = xpos - lastX_;
     float dy = ypos - lastY_;

@@ -80,11 +80,11 @@ ObjectFromFileIn::ObjectFromFileIn(std::string path) {
     printf("Reading in %s (%d triangles). . .\n", path.c_str(), num_triangles);
 
     glGenVertexArrays(NumVAOs, getVaOs());
-    glBindVertexArray(getVaOs()[Triangles]);
+    glBindVertexArray(getVaOs()[ModelSpace]);
 
-    std::vector<glm::vec3> vertices;
-    std::vector<glm::vec3> normals;
     GLfloat face_normals[num_triangles][3];
+
+    clearVertices();
 
     char *x = new char[100];
     char *y = new char[100];
@@ -112,8 +112,8 @@ ObjectFromFileIn::ObjectFromFileIn(std::string path) {
             normal.y = std::stof(ny);
             normal.z = std::stof(nz);
 
-            vertices.push_back(vertex);
-            normals.push_back(normal);
+            addVertex(Vertex(vertex, normal, glm::vec2(0.0f, 0.0f)));
+
             if (material_index == -1)
                 material_index = std::stoi(material);
             else
@@ -138,31 +138,13 @@ ObjectFromFileIn::ObjectFromFileIn(std::string path) {
     delete[] nz;
     delete[] material;
 
-    printf("Vertices[0]: %f %f %f\n", vertices[0].x, vertices[0].y, vertices[0].z);
-    printf("Vertex size: %d\n", vertices.size());
-    printf("Difuse of first material: %f %f %f\n", materials[0].diffuse.x, materials[0].diffuse.y,
-           materials[0].diffuse.z);
 
 
     fclose(fp);
 
-    glGenBuffers( NumBuffers, getBuffers() );
-    glBindBuffer( GL_ARRAY_BUFFER, getBuffers()[ArrayBuffer] );
-    glBufferData( GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3),
-                  vertices.data(), GL_STATIC_DRAW );
+    printf("Finished reading in %s\n", path.c_str());
+    initVAO();
 
-
-    glVertexAttribPointer( vPosition, 3, GL_FLOAT,
-                           GL_FALSE, 0, BUFFER_OFFSET(0) );
-    glEnableVertexAttribArray( vPosition );
-
-    glBindBuffer( GL_ARRAY_BUFFER, getBuffers()[ColorBuffer] );
-    glBufferData(GL_ARRAY_BUFFER, normals.size() * sizeof(glm::vec3),
-                 normals.data(), GL_STATIC_DRAW );
-
-    glVertexAttribPointer(vNormals, 3, GL_FLOAT,
-                          GL_FALSE, 0, BUFFER_OFFSET(0) );
-    glEnableVertexAttribArray(vNormals );
 
 }
 
@@ -172,7 +154,7 @@ void ObjectFromFileIn::renderImGui() {
         ImGui::Text("path: %s", path.c_str());
         ImGui::Text("material_count: %d", material_count);
         ImGui::Text("draw_call_count: %zu", callSpans.size());
-        ImGui::Text("Triangles: %d", getNumVertices() / 3);
+        ImGui::Text("ModelSpace: %d", getNumVertices() / 3);
         if (ImGui::BeginChild("Vertices")) {
 //        for (int i = 0; i < getNumVertices(); i++) {
 //            ImGui::Text("v%d: %f %f %f", i, getVertices()[i].x, getVertices()[i].y, getVertices()[i].z);

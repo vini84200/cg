@@ -9,48 +9,26 @@
 #include <vector>
 
 TriangleObject::TriangleObject()
-: material_(glm::vec3(1, 1, 1), glm::vec3(1, 1, 1), glm::vec3(1, 1, 1), 1)
-{
-    glGenVertexArrays( NumVAOs, getVaOs() );
-    glBindVertexArray( getVaOs()[Triangles] );
+        : material_(glm::vec3(1, 1, 1), glm::vec3(1, 1, 1), glm::vec3(1, 1, 1), 1) {
 
-    const int numVertices = 3;
-    setNumVertices(numVertices);
     setIndecesType(TriangleType);
+    clearVertices();
+    addVertex(
+            Vertex(glm::vec3(-0.90f, -0.90f, 0.f), glm::vec3(1, 0, 0), glm::vec2(0, 0))
+    );
+    addVertex(
+            Vertex(glm::vec3(0.90f, -0.90f, 0.f), glm::vec3(0, 1, 0), glm::vec2(1, 0))
+    );
+    addVertex(
+            Vertex(glm::vec3(0.f, 0.85f, 0.f), glm::vec3(0, 0, 1), glm::vec2(0.5, 1))
+    );
 
-    GLfloat  vertices[numVertices][3] = {
-            { -0.90f, -0.90f, 0.f }, {  0.90, -0.90f, 0.f }, { -0.f,  0.85f, 0.f },  // Triangle 1
-    };
-
-    glGenBuffers( NumBuffers, getBuffers() );
-    glBindBuffer( GL_ARRAY_BUFFER, getBuffers()[ArrayBuffer] );
-    glBufferData( GL_ARRAY_BUFFER, sizeof(vertices),
-                  vertices, GL_STATIC_DRAW );
-
-    glVertexAttribPointer( vPosition, 3, GL_FLOAT,
-                           GL_FALSE, 0, BUFFER_OFFSET(0) );
-    glEnableVertexAttribArray( vPosition );
-
-    GLfloat normals[NumVertices][3] = {
-            { 1, 0, 0}, { 0, 1, 0}, { 0, 0, 1},
-            { 1, 1, 0}, { 1, 0, 1}, { 0, 1, 1}
-    };
-    glBindBuffer( GL_ARRAY_BUFFER, getBuffers()[ColorBuffer] );
-    glBufferData(GL_ARRAY_BUFFER, sizeof(normals),
-                 normals, GL_STATIC_DRAW );
-
-    glVertexAttribPointer(vNormals, 3, GL_FLOAT,
-                          GL_FALSE, 0, BUFFER_OFFSET(0) );
-    glEnableVertexAttribArray(vNormals );
+    initVAO();
 
     printf("Initialized\n");
 }
 
 void TriangleObject::renderImGui() {
-    if (ImGui::BeginChild("Triangle")) {
-        ImGui::Text("Hello from Triangle");
-        ImGui::EndChild();
-    }
 }
 
 std::string TriangleObject::getName() const {

@@ -22,6 +22,7 @@ public:
             Camera *camera) = 0;
     virtual void renderImGui() = 0;
     virtual void update(float dt) = 0;
+    virtual std::string getName() const = 0;
 };
 
 

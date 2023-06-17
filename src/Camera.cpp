@@ -14,7 +14,7 @@ Camera::Camera() {
     fov = 45.0f;
     pos = glm::vec4(0.0f, 0.0f, 400.0f, 1.0f);
     forward = glm::vec4(0.0f, 0.0f, -1.0f, 0.0f);
-    aspectRatio = 9.f / 16.f;
+    aspectRatio = 800.0f / 600.0f;
     near = 0.1f;
     far = 100000.f;
 }

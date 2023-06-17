@@ -25,8 +25,8 @@ public:
     void onMouseMoveDelta(double dx, double dy);
 
 protected:
-    glm::vec4 pos;
-    glm::vec4 forward;
+    glm::vec4 pos{};
+    glm::vec4 forward{};
 
     float fov;
     float near;
@@ -34,10 +34,10 @@ protected:
     float aspectRatio;
 
 
-    glm::vec3 movement_;
+    glm::vec3 movement_{};
     bool is_orbital_ = true;
     bool is_mouse_pressed_ = false;
-    bool speed_up_;
+    bool speed_up_{};
 };
 
 

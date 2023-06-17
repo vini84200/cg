@@ -9,18 +9,22 @@
 #include <string>
 #include <vector>
 #include "glad/glad.h"
+#include "glm/ext/matrix_transform.hpp"
+#include "glm/fwd.hpp"
 
 enum VAO_IDs {
-    Triangles, NumVAOs
-};
-enum Buffer_IDs {
-    ArrayBuffer, ColorBuffer, NumBuffers
-};
-enum Attrib_IDs {
-    vPosition = 0, vNormals = 1
+    ModelSpace, CameraSpace, NumVAOs
 };
 
-enum IndecesType {
+enum Buffer_IDs {
+    PositionBuffer, NormalsBuffer, TextureCoordBuffer, NumBuffers
+};
+
+enum Attrib_IDs {
+    vPosition = 0, vNormals = 1, vTextureCoord = 2
+};
+
+enum IndicesType {
     TriangleType, TriangleStripType, TriangleFanType
 };
 
@@ -30,8 +34,11 @@ struct Material {
     glm::vec3 specular;
     float shine;
 
-    Material(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, float shine) : ambient(ambient), diffuse(diffuse),
-                                                                                      specular(specular), shine(shine) {};
+    Material(glm::vec3 ambient, glm::vec3 diffuse, glm::vec3 specular, float shine) : ambient(ambient),
+                                                                                      diffuse(diffuse),
+                                                                                      specular(specular),
+                                                                                      shine(shine) {};
+
     Material() = default;
 };
 
@@ -43,6 +50,19 @@ struct CallSpan {
     int materialIndex;
 
     CallSpan(int start, int count, int materialIndex) : start(start), count(count), materialIndex(materialIndex) {}
+};
+
+struct Vertex {
+    glm::vec4 position;
+    glm::vec3 normal;
+    glm::vec2 texture;
+
+    Vertex(glm::vec3 position, glm::vec3 normal, glm::vec2 texture) : position(glm::vec4(position, 1.0)), normal(normal),
+                                                                      texture(texture) {};
+    Vertex(glm::vec4 position, glm::vec3 normal, glm::vec2 texture) : position(position), normal(normal),
+                                                                      texture(texture) {};
+
+    Vertex() = default;
 };
 
 /**
@@ -59,27 +79,48 @@ public:
 
     GLuint *getVaOs();
 
-    GLuint *getBuffers();
+    GLuint *getBuffers(int vao);
 
     GLuint getNumVertices() const;
 
     void setNumVertices(GLuint numVertices);
 
-    IndecesType getIndecesType() const;
+    IndicesType getIndecesType() const;
 
-    void setIndecesType(IndecesType indecesType);
+    void setIndecesType(IndicesType indecesType);
+
     virtual std::string getName() const;
+
     virtual void renderImGui() = 0;
+
     virtual void update(float dt) = 0;
+
     virtual std::vector<CallSpan> getCallSpan() = 0;
+
     virtual Material *getMaterial(int index) = 0;
 
+    void updateCameraVAO(const glm::mat4 &projViewMatrix);
+
+    void addVertex(Vertex vertex);
+    void clearVertices();
+protected:
+    void initVAO();
+
 private:
-    glm::mat4 transformMatrix{};
-    GLuint VAOs[NumVAOs]{};
-    GLuint Buffers[NumBuffers]{};
-    GLuint numVertices{};
-    IndecesType indecesType;
+    glm::mat4 transformMatrix;
+    std::vector<Vertex> originalVertices;
+    GLuint VAOs[NumVAOs]{0};
+    GLuint buffers[NumVAOs][NumBuffers]{0};
+    GLuint numVertices{0};
+    GLuint numVisibleVertices{0};
+public:
+    GLuint getNumVisibleVertices() const;
+
+    void setNumVisibleVertices(GLuint numVisibleVertices);
+
+private:
+    IndicesType indicesType;
+    glm::mat4 lastProjViewMatrix {};
 };
 
 #endif //TRIANGLE_OBJECT_H

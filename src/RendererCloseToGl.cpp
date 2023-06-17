@@ -1,23 +1,24 @@
 //
-// Created by vini84200 on 5/24/23.
+// Created by vini84200 on 6/16/23.
 //
 
-#include "RendererSimple.h"
+#include "RendererCloseToGl.h"
 #include "Object.h"
 #include "loadShader/LoadShaders.h"
 #include "imgui.h"
 
-RendererSimple::RendererSimple() {
+RendererCloseToGl::RendererCloseToGl() {
+
     ShaderInfo shaders[] =
             {
-                    {GL_VERTEX_SHADER,   "assets/shaders/triangles.vert"},
-                    {GL_FRAGMENT_SHADER, "assets/shaders/triangles.frag"},
+                    {GL_VERTEX_SHADER,   "assets/shaders/passThrough.vert"},
+                    {GL_FRAGMENT_SHADER, "assets/shaders/passThrough.frag"},
                     {GL_NONE,            nullptr}
             };
     program = LoadShaders(shaders);
 }
 
-void RendererSimple::render(Scene *scene, Camera *camera) {
+void RendererCloseToGl::render(Scene *scene, Camera *camera) {
     // Set the configuration
     switch (renderType) {
         case POINTS:
@@ -50,25 +51,21 @@ void RendererSimple::render(Scene *scene, Camera *camera) {
     // Initialize the camera
     glm::mat4 projectionMatrix = camera->getProjectionMatrix();
     glm::mat4 viewMatrix = camera->getViewMatrix();
+    glm::mat4 projectionViewMatrix = projectionMatrix * viewMatrix;
 
     // Set the projection matrix
-    glUniformMatrix4fv( glGetUniformLocation( program, "projection" ), 1, GL_FALSE, &projectionMatrix[0][0] );
-    // Set the view matrix
-    glUniformMatrix4fv( glGetUniformLocation( program, "view" ), 1, GL_FALSE, &viewMatrix[0][0] );
-
-    // TODO: This is temp
-    glUniformMatrix4fv( glGetUniformLocation( program, "model" ), 1, GL_FALSE, &glm::mat4(1.0f)[0][0] );
-
 
     for (auto object : scene->getObjects()) {
+        object->updateCameraVAO(projectionViewMatrix);
         // Render the object
         renderObject(object);
     }
 }
 
-void RendererSimple::renderObject(std::shared_ptr<Object> object) {
+void RendererCloseToGl::renderObject(std::shared_ptr<Object> object) {
     // Bind the VAO
-    glBindVertexArray(object->getVaOs()[ModelSpace]);
+    glBindVertexArray(object->getVaOs()[CameraSpace]);
+
 
     // Draw the triangles
     for (const auto& callSpan : object->getCallSpan()) {
@@ -96,8 +93,8 @@ void RendererSimple::renderObject(std::shared_ptr<Object> object) {
     glBindVertexArray(0);
 }
 
-void RendererSimple::renderImGui() {
-    ImGui::Begin("RendererSimple");
+void RendererCloseToGl::renderImGui() {
+    ImGui::Begin("RendererCloseToGl");
     ImGui::Text("Render Type");
     ImGui::RadioButton("ModelSpace", (int *) &renderType, TRIANGLES);
     ImGui::RadioButton("Lines", (int *) &renderType, LINES);
@@ -112,10 +109,10 @@ void RendererSimple::renderImGui() {
     ImGui::End();
 }
 
-void RendererSimple::update(float dt) {
+void RendererCloseToGl::update(float dt) {
 
 }
 
-std::string RendererSimple::getName() const {
-    return "RendererSimple";
+std::string RendererCloseToGl::getName() const {
+    return "RendererCloseToGl";
 }
