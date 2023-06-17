@@ -106,6 +106,7 @@ void Object::updateCameraVAO(const glm::mat4 &projViewMatrix) {
     glBindBuffer(GL_ARRAY_BUFFER, getBuffers(VAO_IDs::CameraSpace)[Buffer_IDs::TextureCoordBuffer]);
     glBufferSubData(GL_ARRAY_BUFFER, 0, numVerticesToKeep * 2 * sizeof(float), textures);
 
+    setNumVisibleVertices(numVerticesToKeep);
 
     // Unbind the buffer
     glBindVertexArray(0);

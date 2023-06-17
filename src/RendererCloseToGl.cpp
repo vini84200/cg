@@ -68,7 +68,7 @@ void RendererCloseToGl::renderObject(std::shared_ptr<Object> object) {
 
 
     // Draw the triangles
-    for (const auto& callSpan : object->getCallSpan()) {
+//    for (const auto& callSpan : object->getCallSpan()) {
         // Setup the material
         if (colorOverride_) {
             glUniform3fv(glGetUniformLocation(program, "material.ambientColor"), 1, &newColor[0]);
@@ -77,15 +77,15 @@ void RendererCloseToGl::renderObject(std::shared_ptr<Object> object) {
             glUniform1f(glGetUniformLocation(program, "material.shine"), 0.3);
 
         } else {
-            Material *m = object->getMaterial(callSpan.materialIndex);
+            Material *m = object->getMaterial(0);
             glUniform3fv(glGetUniformLocation(program, "material.ambientColor"), 1, &m->ambient[0]);
             glUniform3fv(glGetUniformLocation(program, "material.diffuseColor"), 1, &m->diffuse[0]);
             glUniform3fv(glGetUniformLocation(program, "material.specularColor"), 1, &m->specular[0]);
             glUniform1f(glGetUniformLocation(program, "material.shine"), m->shine);
         }
 
-        glDrawArrays(GL_TRIANGLES, callSpan.start, callSpan.count);
-    }
+        glDrawArrays(GL_TRIANGLES, 0, object->getNumVisibleVertices());
+//    }
 //    glDrawArrays(GL_TRIANGLES, 0, object->getNumVertices());
     // TODO: use the indecesType to draw the triangles
 
