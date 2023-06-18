@@ -10,6 +10,8 @@
 #include "Renderer.h"
 #include <memory>
 #include <vector>
+#include <array>
+
 
 class RendererSimple : public Renderer {
 public:
@@ -34,12 +36,27 @@ private:
     };
     RenderType renderType = TRIANGLES;
 
+    enum ShaderSubroutine {
+        NO_SHADE,
+        GOURAD_AD,
+        GOURAD_SPEC,
+        PHONG,
+        NUM_SUBROUTINES
+    };
+    ShaderSubroutine shaderSubroutine = GOURAD_AD;
+    std::array<GLuint, NUM_SUBROUTINES> shaderSubroutineIndicesVS;
+    std::array<GLuint, NUM_SUBROUTINES> shaderSubroutineIndicesFS;
+
+
     void renderObject(std::shared_ptr<Object> object);
 
     bool backFaceCulling_ = true;
     bool ccw_ = false;
     bool colorOverride_ = false;
     glm::vec3 newColor = glm::vec3(1, 1, 1);
+
+    GLint lightModelVSLocation;
+    GLint lightModelFSLocation;
 };
 
 

@@ -155,14 +155,14 @@ void ObjectFromFileIn::renderImGui() {
         ImGui::Text("material_count: %d", material_count);
         ImGui::Text("draw_call_count: %zu", callSpans.size());
         ImGui::Text("ModelSpace: %d", getNumVertices() / 3);
-        if (ImGui::BeginChild("Vertices")) {
-//        for (int i = 0; i < getNumVertices(); i++) {
-//            ImGui::Text("v%d: %f %f %f", i, getVertices()[i].x, getVertices()[i].y, getVertices()[i].z);
-//        }
-            ImGui::EndChild();
+        if (ImGui::BeginChild("Materials")) {
+            for ( auto & material : materials) {
+                material.renderImGui();
+            }
         }
         ImGui::EndChild();
     }
+    ImGui::EndChild();
 }
 
 std::string ObjectFromFileIn::getName() const {

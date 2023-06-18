@@ -84,6 +84,8 @@ private:
 
     double lastX_;
     double lastY_;
+    std::vector<std::unique_ptr<Renderer>> renderers_;
+    bool vsync_;
 };
 
 

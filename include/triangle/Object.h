@@ -11,6 +11,7 @@
 #include "glad/glad.h"
 #include "glm/ext/matrix_transform.hpp"
 #include "glm/fwd.hpp"
+#include "imgui.h"
 
 enum VAO_IDs {
     ModelSpace, CameraSpace, NumVAOs
@@ -40,6 +41,13 @@ struct Material {
                                                                                       shine(shine) {};
 
     Material() = default;
+
+    void renderImGui() {
+        ImGui::ColorEdit3("Ambient", (float *) &ambient);
+        ImGui::ColorEdit3("Diffuse", (float *) &diffuse);
+        ImGui::ColorEdit3("Specular", (float *) &specular);
+        ImGui::DragFloat("Shine", (float *) &shine);
+    }
 };
 
 #define BUFFER_OFFSET(a) ((void*)(a))
@@ -71,7 +79,7 @@ struct Vertex {
  */
 class Object {
 public:
-    Object() = default;
+    Object();
 
     glm::mat4 getTransformMatrix();
 

@@ -3,6 +3,7 @@
 //
 
 #include "Object.h"
+#include "glm/ext/matrix_transform.hpp"
 #include "glm/fwd.hpp"
 #include <cmath>
 
@@ -44,7 +45,7 @@ glm::mat4 Object::getTransformMatrix() {
 }
 
 void Object::updateCameraVAO(const glm::mat4 &projViewMatrix) {
-    if (lastProjViewMatrix == projViewMatrix) {
+    if (lastProjViewMatrix == projViewMatrix && numVisibleVertices > 0) {
         return; // No need to update the VAO
     }
     lastProjViewMatrix = projViewMatrix;
@@ -61,21 +62,26 @@ void Object::updateCameraVAO(const glm::mat4 &projViewMatrix) {
     assert(numVertices % 3 == 0); // We only support triangles for now
 
     int numTriangles = numVertices / 3;
-    bool keep = true;
+    bool keep;
     int numVerticesToKeep = 0;
     // Calculate new vertices
     for (int tri = 0; tri < numTriangles; tri++) {
         keep = true;
+
         for (int i = 0; i < 3; i++) {
             int index = tri * 3 + i;
             int newIndex = numVerticesToKeep + i;
+
             assert(index < numVertices);
             assert(originalVertices[index].position.w == 1);
-            positions[newIndex] = projViewMatrix * originalVertices[index].position;
+            positions[newIndex] = projViewMatrix * transformMatrix * originalVertices[index].position;
+
             if (positions[newIndex].w <= 0 || std::isnan(positions[newIndex].w)) {
+                // If the vertex is behind the camera or is invalid we don't keep the triangle
                 keep = false;
                 break;
             }
+
             positions[newIndex] /= positions[newIndex].w;
             normals[newIndex] = originalVertices[index].normal;
             textures[newIndex] = originalVertices[index].texture;
@@ -86,19 +92,10 @@ void Object::updateCameraVAO(const glm::mat4 &projViewMatrix) {
             numVerticesToKeep += 3;
         }
     }
-//    for (int i = 0; i < numVertices; i++) {
-//
-//        assert(originalVertices[i].position.w == 1);
-//        positions[i] = projViewMatrix * originalVertices[i].position;
-//        assert(positions[i].w != 0);
-//        assert(!std::isnan(positions[i].w));
-//        // FIXME: Discard vertices that are behind the camera, together with their triangles and other properties
-//        positions[i] /= positions[i].w;
-//    }
 
     // Update the buffers
     glBindBuffer(GL_ARRAY_BUFFER, getBuffers(VAO_IDs::CameraSpace)[Buffer_IDs::PositionBuffer]);
-    glBufferSubData(GL_ARRAY_BUFFER, 0,  numVerticesToKeep * 4 * sizeof(float), positions);
+    glBufferSubData(GL_ARRAY_BUFFER, 0, numVerticesToKeep * 4 * sizeof(float), positions);
 
     glBindBuffer(GL_ARRAY_BUFFER, getBuffers(VAO_IDs::CameraSpace)[Buffer_IDs::NormalsBuffer]);
     glBufferSubData(GL_ARRAY_BUFFER, 0, numVerticesToKeep * 3 * sizeof(float), normals);
@@ -113,8 +110,8 @@ void Object::updateCameraVAO(const glm::mat4 &projViewMatrix) {
 }
 
 void Object::initVAO() {
-    glGenVertexArrays( NumVAOs, getVaOs() );
-    glBindVertexArray( getVaOs()[ModelSpace] );
+    glGenVertexArrays(NumVAOs, getVaOs());
+    glBindVertexArray(getVaOs()[ModelSpace]);
 
     assert(getNumVertices() == originalVertices.size());
     assert(getNumVertices() > 0);
@@ -137,67 +134,66 @@ void Object::initVAO() {
         textures[i * 2 + 1] = originalVertices[i].texture.y;
     }
 
-    glGenBuffers( NumBuffers, getBuffers(ModelSpace));
+    glGenBuffers(NumBuffers, getBuffers(ModelSpace));
 
     // POSITIONS
-    glBindBuffer( GL_ARRAY_BUFFER, getBuffers(0)[PositionBuffer] );
-    glBufferData( GL_ARRAY_BUFFER, sizeof(positions),
-                  positions, GL_STATIC_DRAW );
+    glBindBuffer(GL_ARRAY_BUFFER, getBuffers(0)[PositionBuffer]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(positions),
+                 positions, GL_STATIC_DRAW);
 
-    glVertexAttribPointer( vPosition, 4, GL_FLOAT,
-                           GL_FALSE, 0, BUFFER_OFFSET(0) );
-    glEnableVertexAttribArray( vPosition );
+    glVertexAttribPointer(vPosition, 4, GL_FLOAT,
+                          GL_FALSE, 0, BUFFER_OFFSET(0));
+    glEnableVertexAttribArray(vPosition);
 
     // NORMALS
-    glBindBuffer( GL_ARRAY_BUFFER, getBuffers(0)[NormalsBuffer] );
+    glBindBuffer(GL_ARRAY_BUFFER, getBuffers(0)[NormalsBuffer]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(normals),
-                 normals, GL_STATIC_DRAW );
+                 normals, GL_STATIC_DRAW);
 
     glVertexAttribPointer(vNormals, 3, GL_FLOAT,
-                          GL_FALSE, 0, BUFFER_OFFSET(0) );
-    glEnableVertexAttribArray(vNormals );
+                          GL_FALSE, 0, BUFFER_OFFSET(0));
+    glEnableVertexAttribArray(vNormals);
 
     // TEXTURES
-    glBindBuffer( GL_ARRAY_BUFFER, getBuffers(0)[TextureCoordBuffer] );
+    glBindBuffer(GL_ARRAY_BUFFER, getBuffers(0)[TextureCoordBuffer]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(textures),
-                 textures, GL_STATIC_DRAW );
+                 textures, GL_STATIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-
 
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     // CAMERA POSITION BUFFER
-    glBindVertexArray( getVaOs()[CameraSpace] );
+    glBindVertexArray(getVaOs()[CameraSpace]);
 
-    glGenBuffers( NumBuffers, getBuffers(CameraSpace));
+    glGenBuffers(NumBuffers, getBuffers(CameraSpace));
 
 
     // DYNAMIC DRAW FOR POSITION IN CAMERA SPACE
-    glBindBuffer( GL_ARRAY_BUFFER, getBuffers(CameraSpace)[PositionBuffer]);
-    glBufferData( GL_ARRAY_BUFFER, sizeof(positions),
-                  positions, GL_DYNAMIC_DRAW );
-    glVertexAttribPointer( vPosition, 4, GL_FLOAT,
-                           GL_FALSE, 0, BUFFER_OFFSET(0) );
-    glEnableVertexAttribArray( vPosition );
+    glBindBuffer(GL_ARRAY_BUFFER, getBuffers(CameraSpace)[PositionBuffer]);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(positions),
+                 positions, GL_DYNAMIC_DRAW);
+    glVertexAttribPointer(vPosition, 4, GL_FLOAT,
+                          GL_FALSE, 0, BUFFER_OFFSET(0));
+    glEnableVertexAttribArray(vPosition);
     lastProjViewMatrix = glm::mat4();
 
     // NORMALS
-    glBindBuffer(GL_ARRAY_BUFFER, getBuffers(CameraSpace)[NormalsBuffer] );
+    glBindBuffer(GL_ARRAY_BUFFER, getBuffers(CameraSpace)[NormalsBuffer]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(normals),
-                 normals, GL_DYNAMIC_DRAW );
+                 normals, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(vNormals, 3, GL_FLOAT,
-                          GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(glm::vec3)) );
-    glEnableVertexAttribArray(vNormals );
+                          GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(glm::vec3)));
+    glEnableVertexAttribArray(vNormals);
 
     // TEXTURES
-    glBindBuffer(GL_ARRAY_BUFFER, getBuffers(CameraSpace)[TextureCoordBuffer] );
+    glBindBuffer(GL_ARRAY_BUFFER, getBuffers(CameraSpace)[TextureCoordBuffer]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(textures),
-                 textures, GL_DYNAMIC_DRAW );
+                 textures, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(vTextureCoord, 2, GL_FLOAT,
-                          GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(glm::vec3) * 2) );
-    glEnableVertexAttribArray(vTextureCoord );
+                          GL_FALSE, sizeof(Vertex), BUFFER_OFFSET(sizeof(glm::vec3) * 2));
+    glEnableVertexAttribArray(vTextureCoord);
 
     glBindVertexArray(0);
 }
@@ -218,4 +214,9 @@ GLuint Object::getNumVisibleVertices() const {
 
 void Object::setNumVisibleVertices(GLuint numVisibleVertices) {
     Object::numVisibleVertices = numVisibleVertices;
+}
+
+Object::Object() {
+    transformMatrix = glm::identity<glm::mat4>();
+
 }

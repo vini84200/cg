@@ -5,6 +5,7 @@
 #ifndef TRIANGLE_CAMERA_H
 #define TRIANGLE_CAMERA_H
 
+#include "glm/fwd.hpp"
 #include "glm/glm.hpp"
 
 class Camera {
@@ -15,8 +16,10 @@ public:
     void renderImGui();
 
     glm::mat4 getProjectionMatrix();
-
     glm::mat4 getViewMatrix();
+    glm::vec4 getCCSx() const;
+    glm::vec4 getCCSy() const;
+    glm::vec4 getCCSz() const;
     void onKey(int key, int scancode, int action, int mods);
     void update(float dt);
     void onWindowResize(int width, int height);
@@ -24,8 +27,15 @@ public:
     void onMouseMove(double xpos, double ypos);
     void onMouseMoveDelta(double dx, double dy);
 
+
 protected:
     glm::vec4 pos{};
+public:
+    const glm::vec4 &getPos() const;
+
+    void setPos(const glm::vec4 &pos);
+
+protected:
     glm::vec4 forward{};
 
     float fov;

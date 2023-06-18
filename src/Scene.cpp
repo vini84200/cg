@@ -48,19 +48,19 @@ void Scene::renderImGui() {
                 if (extension == "obj") {
 //                    std::shared_ptr<Object> object = std::make_shared<ObjectFromFileIn>(path);
 //                    addObject(object);
-                } else if (extension == "in") {
-                    std::shared_ptr<Object> object = std::make_shared<ObjectFromFileIn>(path);
-                    addObject(object);
-                } else {
-                    throw std::runtime_error("Invalid file extension");
-                }
-                NFD_FreePath(outPath);
-            } else if (result == NFD_CANCEL) {
-                // Do nothing
+            } else if (extension == "in") {
+                std::shared_ptr<Object> object = std::make_shared<ObjectFromFileIn>(path);
+                addObject(object);
             } else {
-                throw std::runtime_error("Error opening file dialog");
+                throw std::runtime_error("Invalid file extension");
             }
+            NFD_FreePath(outPath);
+        } else if (result == NFD_CANCEL) {
+            // Do nothing
+        } else {
+            throw std::runtime_error("Error opening file dialog");
         }
+    }
 
         for (auto &object : objects) {
             if (ImGui::TreeNode(object->getName().c_str())) {
@@ -73,7 +73,7 @@ void Scene::renderImGui() {
 }
 
 void Scene::update(float dt) {
-    for (auto &object : objects) {
+    for (auto &object: objects) {
         object->update(dt);
     }
 }

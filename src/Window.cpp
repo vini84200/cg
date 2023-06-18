@@ -50,6 +50,7 @@ Window::Window() {
     printf("GLSL version: %s\n", glslVersion);
 
     glfwSwapInterval(1); // Enable vsync
+    vsync_ = true;
 
     glfwSetWindowUserPointer(window_, this);
     glfwSetKeyCallback(window_, [](GLFWwindow *window, int key, int scancode, int action, int mods) {
@@ -151,17 +152,40 @@ void Window::renderImGuiMainWindow() {
     ImGui::Begin("Window");
     ImGui::Text("FPS: %.1f", ImGui::GetIO().Framerate);
     ImGui::Text("Time per frame: %.3f ms", 1000.0f / ImGui::GetIO().Framerate);
+    ImGui::Text("VSync: %s", vsync_ ? "On" : "Off");
+    ImGui::SameLine();
+    if (ImGui::Button("Toggle VSync")) {
+        vsync_ = !vsync_;
+        glfwSwapInterval(vsync_ ? 1 : 0);
+    }
+
     ImGui::Text("Current renderer: %s", renderer_->getName().c_str());
     if (ImGui::Button("Change renderer")) {
         ImGui::OpenPopup("Change renderer");
     }
     if (ImGui::BeginPopup("Change renderer")) {
-        if (ImGui::Selectable("Simple")) {
+        char rendererName[256];
+        sprintf(rendererName, "%s [Current]", renderer_->getName().c_str());
+        if (ImGui::Selectable(rendererName), true) {
+        }
+
+        for (auto& renderer : renderers_) {
+            sprintf(rendererName, "%s", renderer->getName().c_str());
+            if (ImGui::Selectable(rendererName)) {
+                printf("Changing renderer to %s\n", renderer->getName().c_str());
+                std::swap(renderer, renderer_);
+            }
+        }
+
+        ImGui::Separator();
+        if (ImGui::Selectable("New Simple")) {
             printf("Changing renderer to Simple\n");
+            renderers_.emplace_back(std::move(renderer_));
             renderer_ = std::make_unique<RendererSimple>();
         }
-        if (ImGui::Selectable("CloseToGl")) {
+        if (ImGui::Selectable("New CloseToGl")) {
             printf("Changing renderer to CloseToGl\n");
+            renderers_.emplace_back(std::move(renderer_));
             renderer_ = std::make_unique<RendererCloseToGl>();
         }
         ImGui::EndPopup();

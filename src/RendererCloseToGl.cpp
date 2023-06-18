@@ -96,8 +96,8 @@ void RendererCloseToGl::renderObject(std::shared_ptr<Object> object) {
 void RendererCloseToGl::renderImGui() {
     ImGui::Begin("RendererCloseToGl");
     ImGui::Text("Render Type");
-    ImGui::RadioButton("ModelSpace", (int *) &renderType, TRIANGLES);
-    ImGui::RadioButton("Lines", (int *) &renderType, LINES);
+    ImGui::RadioButton("Solid", (int *) &renderType, TRIANGLES);
+    ImGui::RadioButton("Wireframe", (int *) &renderType, LINES);
     ImGui::RadioButton("Points", (int *) &renderType, POINTS);
 
     ImGui::Checkbox("Back Face Culling", &backFaceCulling_);
