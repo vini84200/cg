@@ -39,9 +39,9 @@ subroutine (LightModel) vec3 phong(Material material, vec3 normal, vec3 lightDir
 {
     vec3 ambient = material.ambientColor;
     vec3 diffuse = material.diffuseColor * max(dot(normal, lightDir), 0.0);
-
+    float energyConservation = (material.shine + 8.0f) / (8.0f * 3.14159f);
     vec3 halfDir = normalize(lightDir + viewDir);
-    vec3 specular = material.specularColor * pow(max(dot(normal, halfDir), 0.0), material.shine);
+    vec3 specular = material.specularColor * pow(max(dot(normal, halfDir), 0.0), material.shine) * energyConservation;
     return ambient + diffuse + specular;
 }
 

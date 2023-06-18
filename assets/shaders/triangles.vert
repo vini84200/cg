@@ -44,8 +44,9 @@ subroutine (LightModel) vec3 gouroudADS(Material material, vec3 normal, vec3 lig
 {
     vec3 ambient = material.ambientColor;
     vec3 diffuse = material.diffuseColor * max(dot(normal, lightDir), 0.0f);
+    float energyConservation = (material.shine + 8.0f) / (8.0f * 3.14159f);
     vec3 halfDir = normalize(lightDir + viewDir);
-    vec3 specular = material.specularColor * pow(max(dot(normal, halfDir), 0.0f), material.shine) * 0.5;
+    vec3 specular = max(vec3(0,0,0), material.specularColor * pow(max(dot(normal, halfDir), 0.0f), material.shine) * energyConservation);
     return ambient + diffuse + specular;
 }
 

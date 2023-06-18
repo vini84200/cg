@@ -100,14 +100,19 @@ void RendererSimple::renderObject(std::shared_ptr<Object> object) {
             glUniform3fv(glGetUniformLocation(program, "material.ambientColor"), 1, &newColor[0]);
             glUniform3fv(glGetUniformLocation(program, "material.diffuseColor"), 1, &newColor[0]);
             glUniform3fv(glGetUniformLocation(program, "material.specularColor"), 1, &newColor[0]);
-            glUniform1f(glGetUniformLocation(program, "material.shine"), 0.3);
+            glUniform1f(glGetUniformLocation(program, "material.shine"), 32);
 
         } else {
             Material *m = object->getMaterial(callSpan.materialIndex);
             glUniform3fv(glGetUniformLocation(program, "material.ambientColor"), 1, &m->ambient[0]);
             glUniform3fv(glGetUniformLocation(program, "material.diffuseColor"), 1, &m->diffuse[0]);
-            glUniform3fv(glGetUniformLocation(program, "material.specularColor"), 1, &m->specular[0]);
-            glUniform1f(glGetUniformLocation(program, "material.shine"), m->shine);
+            if (m->shine <= 0) {
+                glUniform3f(glGetUniformLocation(program, "material.specularColor"), 0,0,0);
+                glUniform1f(glGetUniformLocation(program, "material.shine"), m->shine);
+            } else {
+                glUniform3fv(glGetUniformLocation(program, "material.specularColor"), 1, &m->specular[0]);
+                glUniform1f(glGetUniformLocation(program, "material.shine"), m->shine);
+            }
         }
 
         GLsizei subroutineLocations = GL_ACTIVE_SUBROUTINE_UNIFORM_LOCATIONS;
