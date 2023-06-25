@@ -38,7 +38,9 @@ private:
     void drawFlatTopTriangle(Vertex &topL, Vertex &vertex1, Vertex &vertex2);
     void drawFlatBottomTriangle(Vertex &top, Vertex &botL, Vertex &botR);
     Vertex interpolateVertex(Vertex &top, Vertex &bottom, float y);
-    void scanLine(Vertex &left, Vertex &right);
+    void scanLine(Vertex &left, Vertex &right, int y);
+
+    void calculateWindingOrder(std::vector<Vertex> vertices, std::vector<glm::vec3> &windingOrder);
 };
 
 

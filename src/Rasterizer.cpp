@@ -7,6 +7,8 @@
 #include "RenderTarget.h"
 #include "glm/geometric.hpp"
 #include "glm/gtc/epsilon.hpp"
+#include <cmath>
+#include <vector>
 
 void Rasterizer::preSortTriangleVertices(std::vector<Vertex> &vertices) {
     int numTriangles = vertices.size() / 3;
@@ -33,9 +35,17 @@ void Rasterizer::preSortTriangleVertices(std::vector<Vertex> &vertices) {
 }
 
 void Rasterizer::renderObject(Object *object) {
+    std::vector<glm::vec3> windingOrder;
+    assert(object->cameraVertices.size() % 3 == 0);
+    windingOrder.assign(object->cameraVertices.size()/3, glm::vec3(0, 0, 0));
+    calculateWindingOrder(object->cameraVertices, windingOrder);
     preSortTriangleVertices(object->cameraVertices);
     int numTriangles = object->cameraVertices.size() / 3;
     for (int tri = 0; tri < numTriangles; tri++) {
+        bool isFrontFacing = windingOrder[tri].z > 0;
+        if (!isFrontFacing) {
+            continue;
+        }
         Vertex &v1 = object->cameraVertices[tri * 3];
         Vertex &v2 = object->cameraVertices[tri * 3 + 1];
         Vertex &v3 = object->cameraVertices[tri * 3 + 2];
@@ -68,15 +78,15 @@ void Rasterizer::drawTriangle(Vertex &top, Vertex &mid, Vertex &bot) {
         // Check if the triangle is a left or right triangle
         // using edge equations
         glm::vec2 a_to_b = glm::normalize(top.position - bot.position);
-        glm::vec2 w      = glm::vec2(a_to_b.y, -a_to_b.x);
-        float     edge   = glm::dot(w, glm::vec2(mid.position - bot.position));
+        glm::vec2 w = glm::vec2(a_to_b.y, -a_to_b.x);
+        float edge = glm::dot(w, glm::vec2(mid.position - bot.position));
 
         if (edge > 0) {
             // Left triangle
             Vertex intersection = interpolateVertex(top, bot, mid.position.y);
             drawFlatBottomTriangle(top, mid, intersection);
             drawFlatTopTriangle(mid, intersection, bot);
-        } else if (edge < 0){
+        } else if (edge < 0) {
             // Right triangle
             Vertex intersection = interpolateVertex(top, bot, mid.position.y);
             drawFlatBottomTriangle(top, intersection, mid);
@@ -99,44 +109,36 @@ void Rasterizer::drawTriangle(Vertex &top, Vertex &mid, Vertex &bot) {
 
 void Rasterizer::drawFlatTopTriangle(Vertex &topL, Vertex &topR, Vertex &bot) {
     float deltaY = bot.position.y - topL.position.y;
-    float dXA = (bot.position.x - topL.position.x) / deltaY;
-    float dXB = (bot.position.x - topR.position.x) / deltaY;
     if (deltaY == 0) {
         // Degenerate triangle
         // It's a line or a point
         return;
     }
 
-    Vertex left = topL;
-    Vertex right = topR;
-    for (int y = topL.position.y; y < bot.position.y; y++) {
-        left.position.x += dXA;
-        left.position.y = y;
-        right.position.x += dXB;
-        right.position.y = y;
-        scanLine(left, right);
+    int initialY = std::ceil(topL.position.y);
+    int finalY = std::ceil(bot.position.y);
+    for (int y = initialY; y < finalY; y++) {
+        Vertex left = interpolateVertex(topL, bot, y);
+        Vertex right = interpolateVertex(topR, bot, y);
+        scanLine(left, right, y);
     }
 
 }
 
 void Rasterizer::drawFlatBottomTriangle(Vertex &top, Vertex &botL, Vertex &botR) {
     float deltaY = botL.position.y - top.position.y;
-    float dXA = (botL.position.x - top.position.x) / deltaY;
-    float dXB = (botR.position.x - top.position.x) / deltaY;
     if (deltaY == 0) {
         // Degenerate triangle
         // It's a line or a point
         return;
     }
 
-    Vertex left = top;
-    Vertex right = top;
-    for (int y = top.position.y; y < botL.position.y; y++) {
-        left.position.x += dXA;
-        left.position.y = y;
-        right.position.x += dXB;
-        right.position.y = y;
-        scanLine(left, right);
+    int initialY = std::ceil(top.position.y);
+    int finalY =  std::ceil(botL.position.y);
+    for (int y = initialY; y < finalY; y++) {
+        Vertex left = interpolateVertex(top, botL, y);
+        Vertex right = interpolateVertex(top, botR, y);
+        scanLine(left, right, y);
     }
 }
 
@@ -152,14 +154,14 @@ Vertex Rasterizer::interpolateVertex(Vertex &top, Vertex &bottom, float y) {
     return interpolated;
 }
 
-void Rasterizer::scanLine(Vertex &left, Vertex &right) {
-    Vertex current = left;
+void Rasterizer::scanLine(Vertex &left, Vertex &right, int y) {
     Pixel tempColor (255, 255, 255);
-    DepthPixel tempDepth({1});
-    for (int x = left.position.x; x < right.position.x; x++) {
+    DepthPixel tempDepth(1);
+    int initialX = std::ceil(left.position.x);
+    int finalX = std::ceil(right.position.x);
+    for (int x = initialX; x < finalX; x++) {
         // TODO: Interpolate the vertex
-        current.position.x = x;
-        renderTarget->checkAndSetPixel(current.position.x, current.position.y, tempColor, tempDepth);
+        renderTarget->checkAndSetPixel(x, y, tempColor, tempDepth);
     }
 }
 
@@ -177,4 +179,17 @@ RenderTarget *Rasterizer::getRenderTarget() const {
 
 void Rasterizer::setRenderTarget(RenderTarget *renderTarget) {
     Rasterizer::renderTarget = renderTarget;
+}
+
+void Rasterizer::calculateWindingOrder(std::vector<Vertex> vertices, std::vector<glm::vec3> &windingOrder) {
+    for (int tri = 0; tri < vertices.size() / 3; tri++) {
+        Vertex &v1 = vertices[tri * 3];
+        Vertex &v2 = vertices[tri * 3 + 1];
+        Vertex &v3 = vertices[tri * 3 + 2];
+
+        glm::vec3 v1v2 = v2.position - v1.position;
+        glm::vec3 v1v3 = v3.position - v1.position;
+        glm::vec3 normal = glm::cross(v1v2, v1v3);
+        windingOrder[tri] = normal;
+    }
 }

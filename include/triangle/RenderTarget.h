@@ -85,6 +85,7 @@ public:
     inline void checkAndSetPixel(int x, int y, Pixel pixel, DepthPixel depth) {
         if (!isInside(x, y)) return;
         int index = getPixelIndex(x, y);
+        // Debug only
         if (depthPixels[index].depth < depth.depth) {
             pixels[index] = pixel;
             depthPixels[index] = depth;

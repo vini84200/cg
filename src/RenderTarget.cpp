@@ -49,6 +49,8 @@ void RenderTarget::init(RenderTargetConfig config) {
     pixels.resize(config.width * config.height);
     depthPixels.resize(config.width * config.height);
     currentConfig.capacity = config.width * config.height;
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, currentConfig.width, currentConfig.height);
 }
 
 void RenderTarget::activate() {
@@ -69,6 +71,10 @@ void RenderTarget::onResize(int width, int height) {
         depthPixels.resize(currentConfig.capacity);
     }
 
+    glDeleteTextures(1, &texture);
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, currentConfig.width, currentConfig.height);
 }
 
 void RenderTarget::render() {
@@ -79,15 +85,10 @@ void RenderTarget::render() {
                     GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
                     GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 GL_RGBA,
-                 currentConfig.width,
-                 currentConfig.height,
-                 0,
-                 GL_RGBA,
-                 GL_UNSIGNED_BYTE,
-                    pixels.data());
+    glTexSubImage2D(GL_TEXTURE_2D,
+                    0, 0, 0,
+                    currentConfig.width, currentConfig.height,
+                    GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
     glBindTexture(GL_TEXTURE_2D, 0);
 
     glUseProgram(program);
