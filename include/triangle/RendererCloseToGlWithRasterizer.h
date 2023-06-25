@@ -2,15 +2,17 @@
 // Created by vini84200 on 6/16/23.
 //
 
-#ifndef TRIANGLE_RENDERERCLOSETOGL_H
-#define TRIANGLE_RENDERERCLOSETOGL_H
-
-
+#include "Rasterizer.h"
+#include "RenderTarget.h"
 #include "Renderer.h"
 
-class RendererCloseToGl: public Renderer {
+#ifndef TRIANGLE_RENDERERCLOSETOGLWITHRASTER_H
+#define TRIANGLE_RENDERERCLOSETOGLWITHRASTER_H
+
+
+class RendererCloseToGlWithRasterizer : public Renderer {
 public:
-    RendererCloseToGl();
+    RendererCloseToGlWithRasterizer();
 
     void render(Scene *scene, Camera *camera) override;
 
@@ -45,7 +47,9 @@ private:
     bool ccw_ = false;
     bool colorOverride_ = false;
     glm::vec3 newColor = glm::vec3(1, 1, 1);
+    RenderTarget renderTarget;
+    Rasterizer rasterizer;
 };
 
 
-#endif //TRIANGLE_RENDERERCLOSETOGL_H
+#endif //TRIANGLE_RENDERERCLOSETOGLWITHRASTER_H

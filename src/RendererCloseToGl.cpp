@@ -56,7 +56,8 @@ void RendererCloseToGl::render(Scene *scene, Camera *camera) {
     // Set the projection matrix
 
     for (auto object : scene->getObjects()) {
-        object->updateCameraVAO(projectionViewMatrix);
+        object->updateCameraVertices(projectionMatrix, viewMatrix);
+        object->updateCameraVAO();
         // Render the object
         renderObject(object);
     }
@@ -115,4 +116,17 @@ void RendererCloseToGl::update(float dt) {
 
 std::string RendererCloseToGl::getName() const {
     return "RendererCloseToGl";
+}
+
+void RendererCloseToGl::start() {
+}
+
+void RendererCloseToGl::pause() {
+}
+
+void RendererCloseToGl::resume() {
+}
+
+void RendererCloseToGl::onResize(int width, int height) {
+
 }

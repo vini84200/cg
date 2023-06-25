@@ -23,6 +23,13 @@ public:
     virtual void renderImGui() = 0;
     virtual void update(float dt) = 0;
     virtual std::string getName() const = 0;
+
+    virtual void start() {};
+    virtual void pause() {};
+    virtual void resume() {};
+
+    virtual void onResize(int width, int height) {};
+
 };
 
 

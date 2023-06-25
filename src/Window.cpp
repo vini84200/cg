@@ -13,6 +13,7 @@
 #include "GLFW/glfw3.h"
 #include "imgui.h"
 #include "RendererCloseToGl.h"
+#include "RendererCloseToGlWithRasterizer.h"
 
 Window::Window() {
     int success = glfwInit();
@@ -104,7 +105,7 @@ void Window::run() {
 
 void Window::initialize() {
     scene_->addObject(std::make_unique<TriangleObject>());
-    scene_->addObject(std::make_unique<ObjectFromFileIn>("assets/cow_up.in"));
+//    scene_->addObject(std::make_unique<ObjectFromFileIn>("assets/cow_up.in"));
 
     imguiPlugin_.init();
     imguiPlugin_.setWindow(this);
@@ -173,7 +174,9 @@ void Window::renderImGuiMainWindow() {
             sprintf(rendererName, "%s", renderer->getName().c_str());
             if (ImGui::Selectable(rendererName)) {
                 printf("Changing renderer to %s\n", renderer->getName().c_str());
+                renderer_->pause();
                 std::swap(renderer, renderer_);
+                renderer_->resume();
             }
         }
 
@@ -182,11 +185,19 @@ void Window::renderImGuiMainWindow() {
             printf("Changing renderer to Simple\n");
             renderers_.emplace_back(std::move(renderer_));
             renderer_ = std::make_unique<RendererSimple>();
+            renderer_->start();
         }
         if (ImGui::Selectable("New CloseToGl")) {
             printf("Changing renderer to CloseToGl\n");
             renderers_.emplace_back(std::move(renderer_));
             renderer_ = std::make_unique<RendererCloseToGl>();
+            renderer_->start();
+        }
+        if (ImGui::Selectable("New CloseToGl With Rasterizer")) {
+            printf("Changing renderer to CloseToGl2 With Rasterizer\n");
+            renderers_.emplace_back(std::move(renderer_));
+            renderer_ = std::make_unique<RendererCloseToGlWithRasterizer>();
+            renderer_->start();
         }
         ImGui::EndPopup();
     }
@@ -212,6 +223,7 @@ void Window::onKeyPressed(int key, int scancode, int action, int mods) {
 void Window::onWindowResized(int w, int h) {
     glViewport(0, 0, w, h);
     camera_->onWindowResize(w, h);
+    renderer_->onResize(w, h);
 }
 
 void Window::onMouseButton(int button, int action, int mods) {

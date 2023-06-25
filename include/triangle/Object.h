@@ -69,7 +69,11 @@ struct Vertex {
                                                                       texture(texture) {};
     Vertex(glm::vec4 position, glm::vec3 normal, glm::vec2 texture) : position(position), normal(normal),
                                                                       texture(texture) {};
-
+    static Vertex binomialInterpolation(Vertex v1, Vertex v2, float t) {
+        return Vertex(v1.position * (1 - t) + v2.position * t,
+                      v1.normal * (1 - t) + v2.normal * t,
+                      v1.texture * (1 - t) + v2.texture * t);
+    }
     Vertex() = default;
 };
 
@@ -107,10 +111,13 @@ public:
 
     virtual Material *getMaterial(int index) = 0;
 
-    void updateCameraVAO(const glm::mat4 &projViewMatrix);
+    void updateCameraVAO();
+    void updateCameraVertices(const glm::mat4 &projMatrix, const glm::mat4 &viewMatrix);
 
     void addVertex(Vertex vertex);
     void clearVertices();
+
+    std::vector<Vertex> cameraVertices;
 protected:
     void initVAO();
 
@@ -121,14 +128,15 @@ private:
     GLuint buffers[NumVAOs][NumBuffers]{0};
     GLuint numVertices{0};
     GLuint numVisibleVertices{0};
+    IndicesType indicesType;
+    glm::mat4 lastProjViewMatrix {};
+
 public:
     GLuint getNumVisibleVertices() const;
 
     void setNumVisibleVertices(GLuint numVisibleVertices);
 
-private:
-    IndicesType indicesType;
-    glm::mat4 lastProjViewMatrix {};
+    bool needsToUpdateCameraVAO;
 };
 
 #endif //TRIANGLE_OBJECT_H
