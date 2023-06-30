@@ -3,6 +3,7 @@
 //
 
 #include "RendererCloseToGlWithRasterizer.h"
+#include "C2GLProgram.h"
 #include "Object.h"
 #include "Rasterizer.h"
 #include "imgui.h"
@@ -21,11 +22,14 @@ void RendererCloseToGlWithRasterizer::render(Scene *scene, Camera *camera) {
     rasterizer.setMode(Rasterizer::Solid);
     rasterizer.setRenderTarget(&renderTarget);
 
-
+    rasterizer.setCcw(ccw_);
+    rasterizer.setBackfaceCulling(backFaceCulling_);
+    C2GLProgram program = C2GLProgram();
+    rasterizer.setProgram(program);
+    program.setViewMatrix(viewMatrix);
+    program.setProjectionMatrix(projectionMatrix);
 
     for (auto object : scene->getObjects()) {
-        object->updateCameraVertices(projectionMatrix, viewMatrix);
-        object->updateCameraVAO();
         // Render the object
         renderObject(object);
     }
@@ -37,22 +41,21 @@ void RendererCloseToGlWithRasterizer::render(Scene *scene, Camera *camera) {
 
 void RendererCloseToGlWithRasterizer::renderObject(std::shared_ptr<Object> object) {
 
-    for (auto &vertex : object->cameraVertices) {
-        vertex.position = renderTarget.getViewportMatrix() * vertex.position;
-    }
+    // TODO: Use the object's model matrix
+    rasterizer.getProgram().setModelMatrix(glm::mat4 (1.0f));
 
     if (colorOverride_) {
-        glUniform3fv(glGetUniformLocation(program, "material.ambientColor"), 1, &newColor[0]);
-        glUniform3fv(glGetUniformLocation(program, "material.diffuseColor"), 1, &newColor[0]);
-        glUniform3fv(glGetUniformLocation(program, "material.specularColor"), 1, &newColor[0]);
-        glUniform1f(glGetUniformLocation(program, "material.shine"), 0.3);
+        Material m = Material(
+                newColor,
+                glm::vec3(0.0f),
+                glm::vec3(0.0f),
+                10.0f
+                );
+        rasterizer.getProgram().setMaterial(m);
 
     } else {
         Material *m = object->getMaterial(0);
-        glUniform3fv(glGetUniformLocation(program, "material.ambientColor"), 1, &m->ambient[0]);
-        glUniform3fv(glGetUniformLocation(program, "material.diffuseColor"), 1, &m->diffuse[0]);
-        glUniform3fv(glGetUniformLocation(program, "material.specularColor"), 1, &m->specular[0]);
-        glUniform1f(glGetUniformLocation(program, "material.shine"), m->shine);
+        rasterizer.getProgram().setMaterial(*m);
     }
 
     rasterizer.renderObject( object.get());

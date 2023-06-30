@@ -33,7 +33,7 @@ public:
 private:
 
     std::shared_ptr<Camera> camera;
-    GLuint program;
+    GLuint program{};
     enum RenderType {
         TRIANGLES,
         LINES,

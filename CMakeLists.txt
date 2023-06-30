@@ -11,7 +11,7 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
 endif()
 
 
-add_executable(triangle src/main.cpp src/LoadShaders.cpp src/Window.cpp include/triangle/Window.h src/Object.cpp src/Renderer.cpp include/triangle/Renderer.h src/Camera.cpp include/triangle/Camera.h src/RendererSimple.cpp include/triangle/RendererSimple.h src/RenderTarget.cpp include/triangle/RenderTarget.h src/Scene.cpp include/triangle/Scene.h src/TriangleObject.cpp include/triangle/TriangleObject.h src/ImGuiPlugin.cpp include/triangle/ImGuiPlugin.h src/ObjectFromFileIn.cpp include/triangle/ObjectFromFileIn.h src/RendererCloseToGl.cpp include/triangle/RendererCloseToGl.h src/RendererCloseToGlWithRasterizer.cpp src/Rasterizer.cpp include/triangle/Rasterizer.h)
+add_executable(triangle src/main.cpp src/LoadShaders.cpp src/Window.cpp include/triangle/Window.h src/Object.cpp src/Renderer.cpp include/triangle/Renderer.h src/Camera.cpp include/triangle/Camera.h src/RendererSimple.cpp include/triangle/RendererSimple.h src/RenderTarget.cpp include/triangle/RenderTarget.h src/Scene.cpp include/triangle/Scene.h src/TriangleObject.cpp include/triangle/TriangleObject.h src/ImGuiPlugin.cpp include/triangle/ImGuiPlugin.h src/ObjectFromFileIn.cpp include/triangle/ObjectFromFileIn.h src/RendererCloseToGl.cpp include/triangle/RendererCloseToGl.h src/RendererCloseToGlWithRasterizer.cpp src/Rasterizer.cpp include/triangle/Rasterizer.h src/C2GLProgram.cpp include/triangle/C2GLProgram.h)
 target_include_directories(triangle PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(triangle PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include/triangle)
 

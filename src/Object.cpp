@@ -266,3 +266,7 @@ void Object::updateCameraVertices(const glm::mat4 &projMatrix, const glm::mat4 &
     }
 
 }
+
+const std::vector<Vertex> &Object::getOriginalVertices() const {
+    return originalVertices;
+}

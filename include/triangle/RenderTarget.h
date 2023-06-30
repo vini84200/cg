@@ -10,11 +10,11 @@
 #include "glm/fwd.hpp"
 
 
-struct Pixel {
+struct ColorPixel {
     unsigned char r, g, b, a;
-    Pixel() = default;
-    Pixel(unsigned char r, unsigned char g, unsigned char b, unsigned char a) : r(r), g(g), b(b), a(a) {}
-    Pixel(unsigned char r, unsigned char g, unsigned char b) : r(r), g(g), b(b), a(255) {}
+    ColorPixel() = default;
+    ColorPixel(unsigned char r, unsigned char g, unsigned char b, unsigned char a) : r(r), g(g), b(b), a(a) {}
+    ColorPixel(unsigned char r, unsigned char g, unsigned char b) : r(r), g(g), b(b), a(255) {}
 };
 
 struct DepthPixel {
@@ -34,7 +34,7 @@ struct RenderTargetConfig {
 };
 
 class RenderTarget {
-    std::vector<Pixel> pixels;
+    std::vector<ColorPixel> pixels;
     std::vector<DepthPixel> depthPixels;
     RenderTargetConfig currentConfig;
 
@@ -75,14 +75,14 @@ public:
         return depthPixels[index].depth > depth;
     }
 
-    inline void setPixel(int x, int y, Pixel pixel, DepthPixel depth) {
+    inline void setPixel(int x, int y, ColorPixel pixel, DepthPixel depth) {
         assert(isInside(x, y));
         int index = getPixelIndex(x, y);
         pixels[index] = pixel;
         depthPixels[index] = depth;
     }
 
-    inline void checkAndSetPixel(int x, int y, Pixel pixel, DepthPixel depth) {
+    inline void checkAndSetPixel(int x, int y, ColorPixel pixel, DepthPixel depth) {
         if (!isInside(x, y)) return;
         int index = getPixelIndex(x, y);
         // Debug only
@@ -94,7 +94,7 @@ public:
 
     void render();
 
-    void Clear(Pixel pixel) {
+    void Clear(ColorPixel pixel) {
         pixels.assign(pixels.size(), pixel);
         depthPixels.assign(depthPixels.size(), DepthPixel());
     }

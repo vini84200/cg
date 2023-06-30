@@ -7,6 +7,7 @@
 
 
 
+#include "C2GLProgram.h"
 #include "Object.h"
 #include "RenderTarget.h"
 #include <vector>
@@ -15,8 +16,8 @@ public:
     Rasterizer() = default;
 
     void renderObject(Object *object);
-    void preSortTriangleVertices(std::vector<Vertex> &vertices);
-    void drawTriangle(Vertex &top, Vertex &mid, Vertex &bot);
+    void preSortTriangleVertices(std::vector<FragVertex> &vertices);
+    void drawTriangle(FragVertex &top, FragVertex &mid, FragVertex &bot);
 
     enum RasterizerMode {
         Wireframe, Solid, Point
@@ -24,6 +25,8 @@ public:
 private:
     RasterizerMode mode;
     RenderTarget *renderTarget;
+
+    std::vector<FragVertex> verticesTempBuffer;
 public:
     RasterizerMode getMode() const;
 
@@ -35,12 +38,26 @@ public:
 
 private:
 
-    void drawFlatTopTriangle(Vertex &topL, Vertex &vertex1, Vertex &vertex2);
-    void drawFlatBottomTriangle(Vertex &top, Vertex &botL, Vertex &botR);
-    Vertex interpolateVertex(Vertex &top, Vertex &bottom, float y);
-    void scanLine(Vertex &left, Vertex &right, int y);
+    void drawFlatTopTriangle(FragVertex &topL, FragVertex &vertex1, FragVertex &vertex2);
+    void drawFlatBottomTriangle(FragVertex &top, FragVertex &botL, FragVertex &botR);
+    FragVertex interpolateVertex(FragVertex &top, FragVertex &bottom, float y);
+    void scanLine(FragVertex &left, FragVertex &right, int y);
 
-    void calculateWindingOrder(std::vector<Vertex> vertices, std::vector<glm::vec3> &windingOrder);
+
+    C2GLProgram* program;
+    bool ccw;
+public:
+    bool isCcw() const;
+
+    void setCcw(bool ccw);
+
+public:
+    C2GLProgram &getProgram() const;
+
+    void setProgram(C2GLProgram &program);
+    bool backfaceCulling = true;
+    bool isBackfaceCulling() const;
+    void setBackfaceCulling(bool backfaceCulling);
 };
 
 

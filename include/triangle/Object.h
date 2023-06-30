@@ -124,6 +124,10 @@ protected:
 private:
     glm::mat4 transformMatrix;
     std::vector<Vertex> originalVertices;
+public:
+    const std::vector<Vertex> &getOriginalVertices() const;
+
+private:
     GLuint VAOs[NumVAOs]{0};
     GLuint buffers[NumVAOs][NumBuffers]{0};
     GLuint numVertices{0};
