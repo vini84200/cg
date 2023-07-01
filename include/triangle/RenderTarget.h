@@ -5,12 +5,21 @@
 #ifndef TRIANGLE_RENDERTARGET_H
 #define TRIANGLE_RENDERTARGET_H
 
+#include <limits>
 #include <vector>
 #include "glad/glad.h"
 #include "glm/fwd.hpp"
+#include "glm/glm.hpp"
 
 
 struct ColorPixel {
+    ColorPixel(glm::vec3 cor) {
+        r = cor.r * 255;
+        g = cor.g * 255;
+        b = cor.b * 255;
+        a = 255;
+    }
+
     unsigned char r, g, b, a;
     ColorPixel() = default;
     ColorPixel(unsigned char r, unsigned char g, unsigned char b, unsigned char a) : r(r), g(g), b(b), a(a) {}
@@ -19,7 +28,7 @@ struct ColorPixel {
 
 struct DepthPixel {
     float depth;
-    DepthPixel() : depth(-1.0f) {}
+    DepthPixel() : depth(std::numeric_limits<float>::min()) {}
     DepthPixel(float depth) : depth(depth) {}
 };
 
@@ -85,7 +94,6 @@ public:
     inline void checkAndSetPixel(int x, int y, ColorPixel pixel, DepthPixel depth) {
         if (!isInside(x, y)) return;
         int index = getPixelIndex(x, y);
-        // Debug only
         if (depthPixels[index].depth < depth.depth) {
             pixels[index] = pixel;
             depthPixels[index] = depth;

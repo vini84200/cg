@@ -55,6 +55,7 @@ void Rasterizer::renderObject(Object *object) {
         for (int j = 0; j < 3; j++) {
             const Vertex &vertex = vertices[i + j];
             triangle[j] = program.vertexShader(vertex);
+            triangle[j].wInv = 1;
         }
         bool isTriangleCulled = false;
 
@@ -76,17 +77,11 @@ void Rasterizer::renderObject(Object *object) {
             continue;
         }
 
-        // Calculate the winding order and cull if necessary
-        for (int j = 0; j < 3; j++) {
-            // Do perspective division
-            FragVertex &vertex = triangle[j];
-            vertex.position.x /= vertex.position.w;
-            vertex.position.y /= vertex.position.w;
-            vertex.position.z /= vertex.position.w;
-            vertex.w = vertex.position.w;
-            vertex.position.w = 1;
-        }
+        triangle[0].perpectiveDivide();
+        triangle[1].perpectiveDivide();
+        triangle[2].perpectiveDivide();
 
+        // Calculate the winding order and cull if necessary
         if (backfaceCulling) {
             FragVertex &v1 = triangle[0];
             FragVertex &v2 = triangle[1];
@@ -100,15 +95,12 @@ void Rasterizer::renderObject(Object *object) {
                 if (windingOrderNormal.z < 0) {
                     continue;
                 }
-            }
-            else {
+            } else {
                 if (windingOrderNormal.z > 0) {
                     continue;
                 }
             }
         }
-
-
 
 
         for (int j = 0; j < 3; j++) {
@@ -128,7 +120,7 @@ void Rasterizer::renderObject(Object *object) {
 
     assert(object->cameraVertices.size() % 3 == 0);
 
-    printf("Num triangles: %d\n", object->cameraVertices.size() / 3);
+//    printf("Num triangles: %d\n", object->cameraVertices.size() / 3);
 
     preSortTriangleVertices(verticesTempBuffer);
 
@@ -223,7 +215,7 @@ void Rasterizer::drawFlatBottomTriangle(FragVertex &top, FragVertex &botL, FragV
     }
 
     int initialY = std::ceil(top.position.y);
-    int finalY =  std::ceil(botL.position.y);
+    int finalY = std::ceil(botL.position.y);
     for (int y = initialY; y < finalY; y++) {
         FragVertex left = interpolateVertex(top, botL, y);
         FragVertex right = interpolateVertex(top, botR, y);
@@ -236,21 +228,26 @@ FragVertex Rasterizer::interpolateVertex(FragVertex &top, FragVertex &bottom, fl
     assert(top.position.y <= y);
     assert(bottom.position.y >= y);
     assert(top.position.y != bottom.position.y);
-    float  t        = (y - top.position.y) / (bottom.position.y - top.position.y);
-    FragVertex interpolated = FragVertex::binomialInterpolation(top, bottom, t);
+    float t = (y - top.position.y) / (bottom.position.y - top.position.y);
+    FragVertex interpolated = FragVertex::interpolate(top, bottom, t);
     assert(glm::epsilonEqual(interpolated.position.y, y, 0.01f));
     interpolated.position.y = y;
     return interpolated;
 }
 
 void Rasterizer::scanLine(FragVertex &left, FragVertex &right, int y) {
-    ColorPixel tempColor (255, 255, 255);
+    ColorPixel tempColor(255, 255, 255);
     DepthPixel tempDepth(1);
     int initialX = std::ceil(left.position.x);
     int finalX = std::ceil(right.position.x);
     for (int x = initialX; x < finalX; x++) {
-        // TODO: Interpolate the vertex
-        renderTarget->checkAndSetPixel(x, y, tempColor, tempDepth);
+        float t = (x - left.position.x) / (right.position.x - left.position.x);
+        FragVertex interpolated = FragVertex::interpolate(left, right, t);
+        interpolated.finish();
+        Pixel pixel = program->fragmentShader(interpolated);
+        ColorPixel color(pixel.color);
+        DepthPixel depth(pixel.depth);
+        renderTarget->checkAndSetPixel(x, y, color, depth);
     }
 }
 
