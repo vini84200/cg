@@ -13,6 +13,7 @@
 
 struct FragVertex {
     glm::vec4 position;
+    glm::vec4 positionWorld;
     glm::vec3 normal;
     glm::vec2 uv;
     glm::vec4 color;
@@ -21,6 +22,7 @@ struct FragVertex {
 
     static FragVertex interpolate(FragVertex v1, FragVertex v2, float t) {
         return FragVertex(v1.position * (1 - t) + v2.position * t,
+                          v1.positionWorld * (1 - t) + v2.positionWorld * t,
                           v1.normal * (1 - t) + v2.normal * t,
                           v1.uv * (1 - t) + v2.uv * t,
                           v1.color * (1 - t) + v2.color * t,
@@ -29,19 +31,20 @@ struct FragVertex {
 
     FragVertex() = default;
 
-    FragVertex(glm::vec4 position, glm::vec3 normal, glm::vec2 uv, glm::vec4 color) : position(position),
-                                                                                      normal(normal),
-                                                                                      uv(uv), wInv{1.0},
-                                                                                      color(color) {};
+    FragVertex(glm::vec4 position, glm::vec4 positionWorld, glm::vec3 normal, glm::vec2 uv, glm::vec4 color) : position(position),
+                                                                                                               normal(normal),
+                                                                                                               uv(uv), wInv{1.0},
+                                                                                                               color(color), positionWorld(positionWorld) {};
 
-    FragVertex(glm::vec4 position, glm::vec3 normal, glm::vec2 uv, glm::vec4 color, float wInv) : position(position),
+    FragVertex(glm::vec4 position,glm::vec4 positionWorld, glm::vec3 normal, glm::vec2 uv, glm::vec4 color, float wInv) : position(position),
                                                                                                   normal(normal),
                                                                                                   uv(uv), wInv{wInv},
-                                                                                                  color(color) {};
+                                                                                                  color(color), positionWorld(positionWorld) {};
 
     void perpectiveDivide() {
         float w = position.w;
         position /= w;
+        positionWorld /= w;
         normal /= w;
         uv /= w;
         wInv = 1.0f / w;
