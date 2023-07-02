@@ -53,6 +53,7 @@ struct FragVertex {
     void finish() {
         normal /= wInv;
         uv /= wInv;
+        positionWorld /= wInv;
     }
 
 };
