@@ -11,6 +11,7 @@
 #include <array>
 #include <cmath>
 #include <cstdio>
+#include <tracy/Tracy.hpp>
 #include <vector>
 #include <stdexcept>
 
@@ -39,6 +40,7 @@ void Rasterizer::preSortTriangleVertices(std::vector<FragVertex> &vertices) {
 }
 
 void Rasterizer::renderObject(Object *object) {
+    ZoneScoped;
     if (this->program == nullptr) {
         throw std::runtime_error("Program is not set");
     }
@@ -136,7 +138,7 @@ void Rasterizer::renderObject(Object *object) {
 }
 
 void Rasterizer::drawTriangle(FragVertex &top, FragVertex &mid, FragVertex &bot) {
-
+    ZoneScoped;
     assert(top.position.y <= mid.position.y);
     assert(mid.position.y <= bot.position.y);
 
@@ -189,6 +191,7 @@ void Rasterizer::drawTriangle(FragVertex &top, FragVertex &mid, FragVertex &bot)
 }
 
 void Rasterizer::drawFlatTopTriangle(FragVertex &topL, FragVertex &topR, FragVertex &bot) {
+    ZoneScoped;
     float deltaY = bot.position.y - topL.position.y;
     if (deltaY == 0) {
         // Degenerate triangle
@@ -207,6 +210,7 @@ void Rasterizer::drawFlatTopTriangle(FragVertex &topL, FragVertex &topR, FragVer
 }
 
 void Rasterizer::drawFlatBottomTriangle(FragVertex &top, FragVertex &botL, FragVertex &botR) {
+    ZoneScoped;
     float deltaY = botL.position.y - top.position.y;
     if (deltaY == 0) {
         // Degenerate triangle
@@ -236,8 +240,7 @@ FragVertex Rasterizer::interpolateVertex(FragVertex &top, FragVertex &bottom, fl
 }
 
 void Rasterizer::scanLine(FragVertex &left, FragVertex &right, int y) {
-    ColorPixel tempColor(255, 255, 255);
-    DepthPixel tempDepth(1);
+    ZoneScoped;
     int initialX = std::ceil(left.position.x);
     int finalX = std::ceil(right.position.x);
     for (int x = initialX; x < finalX; x++) {

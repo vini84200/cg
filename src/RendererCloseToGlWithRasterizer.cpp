@@ -8,6 +8,7 @@
 #include "Rasterizer.h"
 #include "imgui.h"
 #include "GLFW/glfw3.h"
+#include <tracy/Tracy.hpp>
 
 RendererCloseToGlWithRasterizer::RendererCloseToGlWithRasterizer() {
 
@@ -15,6 +16,8 @@ RendererCloseToGlWithRasterizer::RendererCloseToGlWithRasterizer() {
 
 void RendererCloseToGlWithRasterizer::render(Scene *scene, Camera *camera) {
     // Initialize the camera
+    ZoneScoped;
+    FrameMarkStart("RendererCloseToGlWithRasterizer::render");
     renderTarget.Clear({0, 0, 0, 1});
     glm::mat4 projectionMatrix = camera->getProjectionMatrix();
     glm::mat4 viewMatrix = camera->getViewMatrix();
@@ -28,6 +31,7 @@ void RendererCloseToGlWithRasterizer::render(Scene *scene, Camera *camera) {
     rasterizer.setProgram(program);
     program.setViewMatrix(viewMatrix);
     program.setProjectionMatrix(projectionMatrix);
+    program.setViewPos(camera->getPos());
 
     for (auto object : scene->getObjects()) {
         // Render the object
@@ -37,6 +41,8 @@ void RendererCloseToGlWithRasterizer::render(Scene *scene, Camera *camera) {
 
     // Render the Render Target
     renderTarget.render();
+//    FrameImage(renderTarget.getPixelData(), renderTarget.getWidth(), renderTarget.getHeight(), 0, 1);
+    FrameMarkEnd("RendererCloseToGlWithRasterizer::render");
 }
 
 void RendererCloseToGlWithRasterizer::renderObject(std::shared_ptr<Object> object) {
@@ -55,6 +61,19 @@ void RendererCloseToGlWithRasterizer::renderObject(std::shared_ptr<Object> objec
 
     } else {
         Material *m = object->getMaterial(0);
+
+        if (m == nullptr) {
+            m = new Material(
+                    glm::vec3(1.0f),
+                    glm::vec3(0.0f),
+                    glm::vec3(0.0f),
+                    10.0f
+            );
+        }
+
+        if (m->shine <= 0.0f)
+            m->specular = glm::vec3(0.0f);
+
         rasterizer.getProgram().setMaterial(*m);
     }
 

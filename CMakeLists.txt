@@ -1,4 +1,7 @@
 cmake_minimum_required(VERSION 3.25)
+
+include(FetchContent)
+
 project(triangle)
 
 set(CMAKE_CXX_STANDARD 17)
@@ -52,7 +55,22 @@ add_subdirectory("${EXT_DIR}/nfd-extended")
 #    target_link_libraries(${PROJECT_NAME} PUBLIC glad glfw glm imgui)
 
 #else()
-    target_link_libraries(${PROJECT_NAME} PUBLIC glad glfw glm imgui nfd)
 #endif()
+
+
+FetchContent_Declare (
+        tracy
+        GIT_REPOSITORY https://github.com/wolfpld/tracy.git
+        GIT_TAG master
+        GIT_SHALLOW TRUE
+        GIT_PROGRESS TRUE
+)
+FetchContent_MakeAvailable (tracy)
+option(TRACY_ENABLE "Enable Tracy" OFF)
+
+target_include_directories(${PROJECT_NAME} PUBLIC ${TRACY_INCLUDE_DIR})
+message(STATUS "TRACY_INCLUDE_DIR: ${TRACY_INCLUDE_DIR}")
+
+target_link_libraries(${PROJECT_NAME} PUBLIC glad glfw glm imgui nfd TracyClient)
 
 

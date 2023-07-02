@@ -14,6 +14,7 @@
 #include "imgui.h"
 #include "RendererCloseToGl.h"
 #include "RendererCloseToGlWithRasterizer.h"
+#include "tracy/Tracy.hpp"
 
 Window::Window() {
     int success = glfwInit();
@@ -124,7 +125,9 @@ void Window::render() {
     renderer_->render(scene_.get(), camera_.get());
     imguiPlugin_.render();
 
+
     glfwSwapBuffers(window_);
+    FrameMark;
     glfwPollEvents();
 }
 

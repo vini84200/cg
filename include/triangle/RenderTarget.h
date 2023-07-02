@@ -28,8 +28,30 @@ struct ColorPixel {
 
 struct DepthPixel {
     float depth;
-    DepthPixel() : depth(std::numeric_limits<float>::min()) {}
+    DepthPixel() : depth(std::numeric_limits<float>::max()) {}
     DepthPixel(float depth) : depth(depth) {}
+
+    DepthPixel operator- (float depth) const {
+        return {this->depth - depth};
+    }
+
+    DepthPixel operator-= (float depth) {
+        this->depth -= depth;
+        return *this;
+    }
+
+    DepthPixel operator- (DepthPixel depth) const {
+        return {this->depth - depth.depth};
+    }
+
+    DepthPixel operator-= (DepthPixel depth) {
+        this->depth -= depth.depth;
+        return *this;
+    }
+
+    const float operator/ (float depth) const {
+        return this->depth / depth;
+    }
 };
 
 struct RenderTargetConfig {
@@ -40,10 +62,17 @@ struct RenderTargetConfig {
     inline int requiredCapacity() const {
         return width * height;
     }
+
+    float depthBufferStart = -1.0;
+    float depthBufferEnd = 1.0;
 };
 
 class RenderTarget {
     std::vector<ColorPixel> pixels;
+public:
+    ColorPixel * getPixelData() const;
+
+private:
     std::vector<DepthPixel> depthPixels;
     RenderTargetConfig currentConfig;
 
@@ -74,6 +103,9 @@ public:
     void deactivate();
     void onResize(int width, int height);
 
+    int getWidth() const;
+    int getHeight() const;
+
     inline int getPixelIndex(int x, int y) const {
         return y * currentConfig.width + x;
     }
@@ -94,7 +126,7 @@ public:
     inline void checkAndSetPixel(int x, int y, ColorPixel pixel, DepthPixel depth) {
         if (!isInside(x, y)) return;
         int index = getPixelIndex(x, y);
-        if (depthPixels[index].depth < depth.depth) {
+        if (depthPixels[index].depth > depth.depth) {
             pixels[index] = pixel;
             depthPixels[index] = depth;
         }
@@ -111,6 +143,10 @@ public:
     glm::mat4 getViewportMatrix() const;
 
     void renderImGui();
+
+    std::vector<DepthPixel> getDepthBuffer();
+
+    GLuint depth_texture;
 };
 
 

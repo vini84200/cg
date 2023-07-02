@@ -3,9 +3,11 @@
 //
 
 #include "RenderTarget.h"
+#include "imgui.h"
 #include "loadShader/LoadShaders.h"
 #include "Object.h"
 #include <GL/gl.h>
+#include <vector>
 
 RenderTarget::RenderTarget() {
     currentConfig = RenderTargetConfig();
@@ -42,6 +44,7 @@ RenderTarget::RenderTarget() {
     glBindVertexArray(0);
 
     glGenTextures(1, &texture);
+    glGenTextures(1, &depth_texture);
 }
 
 void RenderTarget::init(RenderTargetConfig config) {
@@ -51,6 +54,10 @@ void RenderTarget::init(RenderTargetConfig config) {
     currentConfig.capacity = config.width * config.height;
     glBindTexture(GL_TEXTURE_2D, texture);
     glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, currentConfig.width, currentConfig.height);
+
+    glBindTexture(GL_TEXTURE_2D, depth_texture);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT32F, currentConfig.width, currentConfig.height);
+
 }
 
 void RenderTarget::activate() {
@@ -75,6 +82,11 @@ void RenderTarget::onResize(int width, int height) {
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
     glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, currentConfig.width, currentConfig.height);
+    glDeleteTextures(1, &depth_texture);
+    glGenTextures(1, &depth_texture);
+    glBindTexture(GL_TEXTURE_2D, depth_texture);
+    glTexStorage2D(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT32F, currentConfig.width, currentConfig.height);
+
 }
 
 void RenderTarget::render() {
@@ -114,6 +126,44 @@ glm::mat4 RenderTarget::getViewportMatrix() const {
 void RenderTarget::renderImGui() {
     ImGui::Text("Size: %d x %d", currentConfig.width, currentConfig.height);
     ImGui::Text("Capacity: %d", currentConfig.capacity);
+    if (ImGui::TreeNode("Depth Buffer")) {
+        std::vector<float> depthPixels_;
+        depthPixels_.reserve(depthPixels.size());
+        ImGui::SliderFloat("Start", &currentConfig.depthBufferStart, -1.0f, 1.0f);
+        ImGui::SliderFloat("End", &currentConfig.depthBufferEnd, -1.0f, 1.0f);
 
+        // Render the depth buffer into the window
+        for (auto pixel : depthPixels) {
+            depthPixels_.push_back((pixel - currentConfig.depthBufferStart) / (currentConfig.depthBufferEnd - currentConfig.depthBufferStart));
+        }
 
+        // Render the depth buffer into a texture
+        glBindTexture(GL_TEXTURE_2D, depth_texture);
+        glTexSubImage2D(GL_TEXTURE_2D,
+                        0, 0, 0,
+                        currentConfig.width, currentConfig.height,
+                        GL_RED, GL_FLOAT, depthPixels_.data());
+        glBindTexture(GL_TEXTURE_2D, 0);
+
+        ImGui::Image(ImTextureID (depth_texture), ImVec2 (200, 100));
+
+        ImGui::TreePop();
+    }
+
+}
+
+ColorPixel *RenderTarget::getPixelData() const {
+    return const_cast<ColorPixel *>(pixels.data());
+}
+
+int RenderTarget::getWidth() const {
+    return currentConfig.width;
+}
+
+int RenderTarget::getHeight() const {
+    return currentConfig.height;
+}
+
+std::vector<DepthPixel> RenderTarget::getDepthBuffer() {
+    return depthPixels;
 }

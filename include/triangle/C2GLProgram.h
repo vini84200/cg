@@ -97,6 +97,11 @@ public:
 
     Pixel fragmentShader(FragVertex &vertex);
 
+    const glm::vec4 &getViewPos() const;
+
+    void setViewPos(const glm::vec4 &viewPos);
+
+    glm::vec4 view_pos;
 };
 
 
