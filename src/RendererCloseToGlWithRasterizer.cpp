@@ -22,7 +22,17 @@ void RendererCloseToGlWithRasterizer::render(Scene *scene, Camera *camera) {
     glm::mat4 projectionMatrix = camera->getProjectionMatrix();
     glm::mat4 viewMatrix = camera->getViewMatrix();
 
-    rasterizer.setMode(Rasterizer::Solid);
+    switch (renderType) {
+        case TRIANGLES:
+            rasterizer.setMode(Rasterizer::Solid);
+            break;
+        case LINES:
+            rasterizer.setMode(Rasterizer::Wireframe);
+            break;
+        case POINTS:
+            rasterizer.setMode(Rasterizer::Point);
+            break;
+    }
     rasterizer.setRenderTarget(&renderTarget);
 
     rasterizer.setCcw(ccw_);

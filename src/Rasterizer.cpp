@@ -11,9 +11,9 @@
 #include <array>
 #include <cmath>
 #include <cstdio>
+#include <stdexcept>
 #include <tracy/Tracy.hpp>
 #include <vector>
-#include <stdexcept>
 
 void Rasterizer::preSortTriangleVertices(std::vector<FragVertex> &vertices) {
     int numTriangles = vertices.size() / 3;
@@ -34,8 +34,6 @@ void Rasterizer::preSortTriangleVertices(std::vector<FragVertex> &vertices) {
         if (v2.position.y < v1.position.y) {
             std::swap(v1, v2);
         }
-
-
     }
 }
 
@@ -65,11 +63,15 @@ void Rasterizer::renderObject(Object *object) {
         for (int j = 0; j < 3; j++) {
             FragVertex &vertex = triangle[j];
             bool isInFront = vertex.position.w > 0;
-            bool isOutsideInX = vertex.position.x < -vertex.position.w || vertex.position.x > vertex.position.w;
-            bool isOutsideInY = vertex.position.y < -vertex.position.w || vertex.position.y > vertex.position.w;
-            bool isOutsideInZ = vertex.position.z < -vertex.position.w || vertex.position.z > vertex.position.w;
+            bool isOutsideInX = vertex.position.x < -vertex.position.w ||
+                vertex.position.x > vertex.position.w;
+            bool isOutsideInY = vertex.position.y < -vertex.position.w ||
+                vertex.position.y > vertex.position.w;
+            bool isOutsideInZ = vertex.position.z < -vertex.position.w ||
+                vertex.position.z > vertex.position.w;
 
-            isTriangleCulled |= !isInFront || isOutsideInX || isOutsideInY || isOutsideInZ;
+            isTriangleCulled |=
+                !isInFront || isOutsideInX || isOutsideInY || isOutsideInZ;
             if (isTriangleCulled) {
                 break;
             }
@@ -104,7 +106,6 @@ void Rasterizer::renderObject(Object *object) {
             }
         }
 
-
         for (int j = 0; j < 3; j++) {
             // Do perspective division
             FragVertex &vertex = triangle[j];
@@ -112,17 +113,14 @@ void Rasterizer::renderObject(Object *object) {
             // Do viewport transform
             vertex.position = renderTarget->getViewportMatrix() * vertex.position;
 
-
             // Save the vertex to the temp buffer
             verticesTempBuffer.push_back(vertex);
         }
-
-
     }
 
     assert(object->cameraVertices.size() % 3 == 0);
 
-//    printf("Num triangles: %d\n", object->cameraVertices.size() / 3);
+    //    printf("Num triangles: %d\n", object->cameraVertices.size() / 3);
 
     preSortTriangleVertices(verticesTempBuffer);
 
@@ -133,11 +131,116 @@ void Rasterizer::renderObject(Object *object) {
         FragVertex &v2 = verticesTempBuffer[tri * 3 + 1];
         FragVertex &v3 = verticesTempBuffer[tri * 3 + 2];
 
-        drawTriangle(v1, v2, v3);
+        switch (mode) {
+            case RasterizerMode::Wireframe:
+                drawWireframeTriangle(v1, v2, v3);
+                break;
+            case RasterizerMode::Solid:
+                drawTriangle(v1, v2, v3);
+                break;
+            case RasterizerMode::Point:
+                drawPointsTriangle(v1, v2, v3);
+                break;
+        }
     }
 }
 
-void Rasterizer::drawTriangle(FragVertex &top, FragVertex &mid, FragVertex &bot) {
+void Rasterizer::drawWireframeTriangle(FragVertex &top, FragVertex &mid,
+                                       FragVertex &bot) {
+    ZoneScoped;
+// Draw three lines
+    drawLine(top, bot);
+    drawLine(top, mid);
+    drawLine(mid, bot);
+}
+
+void Rasterizer::drawLine(FragVertex &start, FragVertex &end) {
+    // Use the Bresenham algorithm for line drawing
+    const bool steep = (std::fabs(end.position.y - start.position.y) <
+        std::fabs(end.position.x - start.position.x));
+    float x1 = start.position.x;
+    float x2 = end.position.x;
+    float y1 = start.position.y;
+    float y2 = end.position.y;
+    if (steep) {
+        // Too steep for default Bresenham
+        std::swap(x1, y1);
+        std::swap(x2, y2);
+    }
+    if (x1 > x2) {
+        std::swap(x1, x2);
+        std::swap(y1, y2);
+        std::swap(start, end);
+    }
+
+    const float dx = x2 - x1;
+    const float dy = std::fabs(y2 - y1);
+
+    float error = dx/2.0f;
+    const int ystep = (y1 < y2) ? 1 : -1;
+    int y = (int) y1;
+
+    const int maxX = (int)x2;
+
+    for (int x=(int)x1; x<=maxX; x++) {
+
+        if (steep)
+        {
+            // X and Y are switched
+            float t = (x-x1)/(x1-x2);
+            FragVertex interpolated = FragVertex::interpolate(start, end, t);
+            interpolated.finish();
+            Pixel pixel = program->fragmentShader(interpolated);
+            ColorPixel color(pixel.color);
+            DepthPixel depth(pixel.depth);
+            renderTarget->checkAndSetPixel(y, x, color, depth);
+        } else {
+            float t = (x - x1)/(x1-x2);
+            FragVertex interpolated = FragVertex::interpolate(start, end, t);
+            interpolated.finish();
+            Pixel pixel = program->fragmentShader(interpolated);
+            ColorPixel color(pixel.color);
+            DepthPixel depth(pixel.depth);
+            renderTarget->checkAndSetPixel(x, y, color, depth);
+        }
+
+        error -= dy;
+        if (error < 0)
+        {
+            y += ystep;
+            error += dx;
+        }
+    }
+
+}
+
+void Rasterizer::drawPointsTriangle(FragVertex &top, FragVertex &mid,
+                                    FragVertex &bot) {
+    // Set three points
+    // Top
+    top.finish();
+    Pixel pixel = program->fragmentShader(top);
+    ColorPixel color(pixel.color);
+    DepthPixel depth(pixel.depth);
+    renderTarget->checkAndSetPixel(std::ceil(top.position.x),
+                                   std::ceil(top.position.y), color, depth);
+
+    mid.finish();
+    pixel = program->fragmentShader(mid);
+    color = ColorPixel(pixel.color);
+    depth = DepthPixel(pixel.depth);
+    renderTarget->checkAndSetPixel(std::ceil(mid.position.x),
+                                   std::ceil(mid.position.y), color, depth);
+
+    bot.finish();
+    pixel = program->fragmentShader(bot);
+    color = ColorPixel(pixel.color);
+    depth = DepthPixel(pixel.depth);
+    renderTarget->checkAndSetPixel(std::ceil(bot.position.x),
+                                   std::ceil(bot.position.y), color, depth);
+}
+void Rasterizer::drawTriangle(FragVertex &top, FragVertex &mid,
+                              FragVertex &bot) {
     ZoneScoped;
     assert(top.position.y <= mid.position.y);
     assert(mid.position.y <= bot.position.y);
@@ -147,7 +250,9 @@ void Rasterizer::drawTriangle(FragVertex &top, FragVertex &mid, FragVertex &bot)
         if (mid.position.x < top.position.x) {
             std::swap(top, mid);
         }
+
         drawFlatTopTriangle(top, mid, bot);
+
     } else if (mid.position.y == bot.position.y) {
         // Flat bottom triangle
         if (bot.position.x < mid.position.x) {
@@ -184,13 +289,11 @@ void Rasterizer::drawTriangle(FragVertex &top, FragVertex &mid, FragVertex &bot)
                 // It's a line
             }
         }
-
-
     }
-
 }
 
-void Rasterizer::drawFlatTopTriangle(FragVertex &topL, FragVertex &topR, FragVertex &bot) {
+void Rasterizer::drawFlatTopTriangle(FragVertex &topL, FragVertex &topR,
+                                     FragVertex &bot) {
     ZoneScoped;
     float deltaY = bot.position.y - topL.position.y;
     if (deltaY == 0) {
@@ -206,10 +309,10 @@ void Rasterizer::drawFlatTopTriangle(FragVertex &topL, FragVertex &topR, FragVer
         FragVertex right = interpolateVertex(topR, bot, y);
         scanLine(left, right, y);
     }
-
 }
 
-void Rasterizer::drawFlatBottomTriangle(FragVertex &top, FragVertex &botL, FragVertex &botR) {
+void Rasterizer::drawFlatBottomTriangle(FragVertex &top, FragVertex &botL,
+                                        FragVertex &botR) {
     ZoneScoped;
     float deltaY = botL.position.y - top.position.y;
     if (deltaY == 0) {
@@ -227,7 +330,22 @@ void Rasterizer::drawFlatBottomTriangle(FragVertex &top, FragVertex &botL, FragV
     }
 }
 
-FragVertex Rasterizer::interpolateVertex(FragVertex &top, FragVertex &bottom, float y) {
+void Rasterizer::drawFlatTopTriangleWireframe(FragVertex &topL,
+                                              FragVertex &topR,
+                                              FragVertex &bot) {
+    ZoneScoped;
+    // TODO: Implement
+}
+
+void Rasterizer::drawFlatBottomTriangleWireframe(FragVertex &top,
+                                                 FragVertex &botL,
+                                                 FragVertex &botR) {
+    ZoneScoped;
+    // TODO
+}
+
+FragVertex Rasterizer::interpolateVertex(FragVertex &top, FragVertex &bottom,
+                                         float y) {
     // FIXME: For now use a simple linear interpolation
     assert(top.position.y <= y);
     assert(bottom.position.y >= y);
@@ -254,17 +372,18 @@ void Rasterizer::scanLine(FragVertex &left, FragVertex &right, int y) {
     }
 }
 
-Rasterizer::RasterizerMode Rasterizer::getMode() const {
-    return mode;
+void Rasterizer::scanLineWireframe(FragVertex &left, FragVertex &right, int y) {
+ZoneScoped;
+// TODO: Implement
 }
+
+Rasterizer::RasterizerMode Rasterizer::getMode() const { return mode; }
 
 void Rasterizer::setMode(Rasterizer::RasterizerMode mode) {
     Rasterizer::mode = mode;
 }
 
-RenderTarget *Rasterizer::getRenderTarget() const {
-    return renderTarget;
-}
+RenderTarget *Rasterizer::getRenderTarget() const { return renderTarget; }
 
 void Rasterizer::setRenderTarget(RenderTarget *renderTarget) {
     Rasterizer::renderTarget = renderTarget;
@@ -281,18 +400,12 @@ void Rasterizer::setProgram(C2GLProgram &program) {
     Rasterizer::program = &program;
 }
 
-bool Rasterizer::isBackfaceCulling() const {
-    return backfaceCulling;
-}
+bool Rasterizer::isBackfaceCulling() const { return backfaceCulling; }
 
 void Rasterizer::setBackfaceCulling(bool backfaceCulling) {
     Rasterizer::backfaceCulling = backfaceCulling;
 }
 
-bool Rasterizer::isCcw() const {
-    return ccw;
-}
+bool Rasterizer::isCcw() const { return ccw; }
 
-void Rasterizer::setCcw(bool ccw) {
-    Rasterizer::ccw = ccw;
-}
+void Rasterizer::setCcw(bool ccw) { Rasterizer::ccw = ccw; }

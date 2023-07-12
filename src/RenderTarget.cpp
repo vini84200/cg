@@ -82,6 +82,7 @@ void RenderTarget::onResize(int width, int height) {
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
     glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, currentConfig.width, currentConfig.height);
+    
     glDeleteTextures(1, &depth_texture);
     glGenTextures(1, &depth_texture);
     glBindTexture(GL_TEXTURE_2D, depth_texture);

@@ -18,6 +18,9 @@ public:
     void renderObject(Object *object);
     void preSortTriangleVertices(std::vector<FragVertex> &vertices);
     void drawTriangle(FragVertex &top, FragVertex &mid, FragVertex &bot);
+    void drawWireframeTriangle(FragVertex &top, FragVertex &mid, FragVertex &bot);
+    void drawPointsTriangle(FragVertex &top, FragVertex &mid, FragVertex &bot);
+    void drawLine(FragVertex &start, FragVertex& end);
 
     enum RasterizerMode {
         Wireframe, Solid, Point
@@ -40,9 +43,11 @@ private:
 
     void drawFlatTopTriangle(FragVertex &topL, FragVertex &vertex1, FragVertex &vertex2);
     void drawFlatBottomTriangle(FragVertex &top, FragVertex &botL, FragVertex &botR);
+    void drawFlatTopTriangleWireframe(FragVertex &topL, FragVertex &vertex1, FragVertex &vertex2);
+    void drawFlatBottomTriangleWireframe(FragVertex &top, FragVertex &botL, FragVertex &botR);
     FragVertex interpolateVertex(FragVertex &top, FragVertex &bottom, float y);
     void scanLine(FragVertex &left, FragVertex &right, int y);
-
+    void scanLineWireframe(FragVertex &left, FragVertex &right, int y);
 
     C2GLProgram* program;
     bool ccw;

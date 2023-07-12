@@ -6,3 +6,5 @@ imgui.ini
 /cmake-build-release/
 /cmake-build-relwithdebinfo/
 /cmake-build-release-with-profiler/
+release/
+.idea/
