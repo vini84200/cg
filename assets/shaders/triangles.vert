@@ -42,10 +42,15 @@ subroutine (LightModel) vec3 gouroudAD(Material material, vec3 normal, vec3 ligh
 
 subroutine (LightModel) vec3 gouroudADS(Material material, vec3 normal, vec3 lightDir, vec3 viewDir)
 {
+    vec4 lightPInCCS =vec4(2.0, 2.0, 1.0, 1.0);
+    vec4 vertPosInCCS = view * model * position;
+    vec3 ld = normalize(lightPInCCS.xyz - vertPosInCCS.xyz);
+    vec3 vd = vec3(0.0f, 0.0f, 1.0f);
+
     vec3 ambient = material.ambientColor;
-    vec3 diffuse = material.diffuseColor * max(dot(normal, lightDir), 0.0f);
+    vec3 diffuse = material.diffuseColor * max(dot(normal, ld), 0.0f);
     float energyConservation = (material.shine + 8.0f) / (8.0f * 3.14159f);
-    vec3 halfDir = normalize(lightDir + viewDir);
+    vec3 halfDir = normalize(ld + vd);
     vec3 specular = max(vec3(0,0,0), material.specularColor * pow(max(dot(normal, halfDir), 0.0f), material.shine) * energyConservation);
     return ambient + diffuse + specular;
 }
@@ -60,6 +65,6 @@ void main()
 {
     gl_Position = projection * view * model * position;
     fragPos = vec3(model * position);
-    vertexColor = vec4(lightModelVS(material, normalize(normal), vec3(0.0f, 0.8f, 0.2f), normalize(viewPos - fragPos)), 1.0f);
+    vertexColor = vec4(lightModelVS(material, normalize( mat3(inverse(transpose(view * model))) * normal), vec3(0.0f, 0.8f, 0.2f), normalize(viewPos - fragPos)), 1.0f);
     normalFrag  = vec4(normal, 0.0f);
 }

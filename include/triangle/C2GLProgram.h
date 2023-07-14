@@ -65,48 +65,40 @@ struct Pixel {
 
 class C2GLProgram {
 
-private:
-    glm::mat4 modelMatrix;
 public:
     const glm::mat4 &getModelMatrix() const;
-
     void setModelMatrix(const glm::mat4 &modelMatrix);
-
     const glm::mat4 &getViewMatrix() const;
-
     void setViewMatrix(const glm::mat4 &viewMatrix);
-
     const glm::mat4 &getProjectionMatrix() const;
-
     void setProjectionMatrix(const glm::mat4 &projectionMatrix);
-
     const glm::mat3 &getNormalMatrix() const;
-
-
     const Material &getMaterial() const;
-
     void setMaterial(const Material &material);
 
 private:
+    glm::mat4 modelMatrix;
     glm::mat4 viewMatrix;
     glm::mat4 projectionMatrix;
-    glm::mat3 normalMatrix;
 
     Material material;
 
+protected:
+    glm::mat3 normalMatrix;
 public:
-    C2GLProgram() = default;
+    virtual FragVertex vertexShader(const Vertex &vertex) const = 0;
 
-    FragVertex vertexShader(const Vertex &vertex) const;
-
-    Pixel fragmentShader(FragVertex &vertex);
+    virtual Pixel fragmentShader(FragVertex &vertex) = 0;
 
     const glm::vec4 &getViewPos() const;
 
     void setViewPos(const glm::vec4 &viewPos);
 
     glm::vec4 view_pos;
+
+    virtual void updateNormalMatrix();
 };
+
 
 
 #endif //TRIANGLE_C2GLPROGRAM_H

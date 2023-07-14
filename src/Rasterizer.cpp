@@ -156,62 +156,38 @@ void Rasterizer::drawWireframeTriangle(FragVertex &top, FragVertex &mid,
 
 void Rasterizer::drawLine(FragVertex &start, FragVertex &end) {
     // Use the Bresenham algorithm for line drawing
-    const bool steep = (std::fabs(end.position.y - start.position.y) <
-        std::fabs(end.position.x - start.position.x));
-    float x1 = start.position.x;
-    float x2 = end.position.x;
-    float y1 = start.position.y;
-    float y2 = end.position.y;
-    if (steep) {
-        // Too steep for default Bresenham
-        std::swap(x1, y1);
-        std::swap(x2, y2);
-    }
-    if (x1 > x2) {
-        std::swap(x1, x2);
-        std::swap(y1, y2);
-        std::swap(start, end);
-    }
 
-    const float dx = x2 - x1;
-    const float dy = std::fabs(y2 - y1);
+    int x0 = std::ceil(start.position.x);
+    int y0 = std::ceil(start.position.y);
+    int x1 = std::ceil(end.position.x)-1;
+    int y1 = std::ceil(end.position.y)-1;
 
-    float error = dx/2.0f;
-    const int ystep = (y1 < y2) ? 1 : -1;
-    int y = (int) y1;
+    int dx = std::abs(x1 - x0);
+    int dy = std::abs(y1 - y0);
+    int sx = x0 < x1 ? 1 : -1;
+    int sy = y0 < y1 ? 1 : -1;
+    int err = (dx > dy ? dx : -dy) / 2;
+    int e2;
+    FragVertex vertex = start;
 
-    const int maxX = (int)x2;
+    while (x0 != x1 || y0 != y1) {
+        float t = (((float)x0) - start.position.x) / (end.position.x - start.position.x);
+        vertex = FragVertex::interpolate(start, end, t);
+        vertex.finish();
+        Pixel pixel = program->fragmentShader(vertex);
 
-    for (int x=(int)x1; x<=maxX; x++) {
+        renderTarget->checkAndSetPixel(x0, y0, ColorPixel(pixel.color), DepthPixel(pixel.depth));
 
-        if (steep)
-        {
-            // X and Y are switched
-            float t = (x-x1)/(x1-x2);
-            FragVertex interpolated = FragVertex::interpolate(start, end, t);
-            interpolated.finish();
-            Pixel pixel = program->fragmentShader(interpolated);
-            ColorPixel color(pixel.color);
-            DepthPixel depth(pixel.depth);
-            renderTarget->checkAndSetPixel(y, x, color, depth);
-        } else {
-            float t = (x - x1)/(x1-x2);
-            FragVertex interpolated = FragVertex::interpolate(start, end, t);
-            interpolated.finish();
-            Pixel pixel = program->fragmentShader(interpolated);
-            ColorPixel color(pixel.color);
-            DepthPixel depth(pixel.depth);
-            renderTarget->checkAndSetPixel(x, y, color, depth);
+        e2 = err;
+        if (e2 > -dx) {
+            err -= dy;
+            x0 += sx;
         }
-
-        error -= dy;
-        if (error < 0)
-        {
-            y += ystep;
-            error += dx;
+        if (e2 < dy) {
+            err += dx;
+            y0 += sy;
         }
     }
-
 }
 
 void Rasterizer::drawPointsTriangle(FragVertex &top, FragVertex &mid,
@@ -295,13 +271,6 @@ void Rasterizer::drawTriangle(FragVertex &top, FragVertex &mid,
 void Rasterizer::drawFlatTopTriangle(FragVertex &topL, FragVertex &topR,
                                      FragVertex &bot) {
     ZoneScoped;
-    float deltaY = bot.position.y - topL.position.y;
-    if (deltaY == 0) {
-        // Degenerate triangle
-        // It's a line or a point
-        return;
-    }
-
     int initialY = std::ceil(topL.position.y);
     int finalY = std::ceil(bot.position.y);
     for (int y = initialY; y < finalY; y++) {
@@ -314,13 +283,6 @@ void Rasterizer::drawFlatTopTriangle(FragVertex &topL, FragVertex &topR,
 void Rasterizer::drawFlatBottomTriangle(FragVertex &top, FragVertex &botL,
                                         FragVertex &botR) {
     ZoneScoped;
-    float deltaY = botL.position.y - top.position.y;
-    if (deltaY == 0) {
-        // Degenerate triangle
-        // It's a line or a point
-        return;
-    }
-
     int initialY = std::ceil(top.position.y);
     int finalY = std::ceil(botL.position.y);
     for (int y = initialY; y < finalY; y++) {

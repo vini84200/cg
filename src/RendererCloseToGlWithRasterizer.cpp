@@ -4,13 +4,16 @@
 
 #include "RendererCloseToGlWithRasterizer.h"
 #include "C2GLProgram.h"
+#include "GouradProgram.h"
 #include "Object.h"
+#include "PhongProgram.h"
 #include "Rasterizer.h"
 #include "imgui.h"
 #include "GLFW/glfw3.h"
 #include <tracy/Tracy.hpp>
 
 RendererCloseToGlWithRasterizer::RendererCloseToGlWithRasterizer() {
+    program = new GouradProgram();
 
 }
 
@@ -37,7 +40,8 @@ void RendererCloseToGlWithRasterizer::render(Scene *scene, Camera *camera) {
 
     rasterizer.setCcw(ccw_);
     rasterizer.setBackfaceCulling(backFaceCulling_);
-    C2GLProgram program = C2GLProgram();
+    
+    C2GLProgram &program = *this->program;
     rasterizer.setProgram(program);
     program.setViewMatrix(viewMatrix);
     program.setProjectionMatrix(projectionMatrix);
@@ -104,6 +108,23 @@ void RendererCloseToGlWithRasterizer::renderImGui() {
     ImGui::SameLine();
     ImGui::ColorEdit3("Color", &newColor[0]);
 
+
+    if (ImGui::Button("Choose Shading and Ilumination Model")) {
+        ImGui::OpenPopup("Shading - Ilumination Model");
+    }
+
+    if (ImGui::BeginPopup("Shading - Ilumination Model")) {
+        if (ImGui::Selectable("Gourad - Phong")) {
+            delete program;
+            program = new GouradProgram();
+        }
+        if (ImGui::Selectable("Phong - Phong")) {
+            delete program;
+            program = new PhongProgram();
+        }
+        ImGui::EndPopup();
+    }
+    
     ImGui::Text("Render Target");
     renderTarget.renderImGui();
     ImGui::End();

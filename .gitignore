@@ -8,3 +8,4 @@ imgui.ini
 /cmake-build-release-with-profiler/
 release/
 .idea/
+.cache

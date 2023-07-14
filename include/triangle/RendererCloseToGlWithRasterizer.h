@@ -2,6 +2,7 @@
 // Created by vini84200 on 6/16/23.
 //
 
+#include "C2GLProgram.h"
 #include "Rasterizer.h"
 #include "RenderTarget.h"
 #include "Renderer.h"
@@ -33,7 +34,7 @@ public:
 private:
 
     std::shared_ptr<Camera> camera;
-    GLuint program{};
+    C2GLProgram *program;
     enum RenderType {
         TRIANGLES,
         LINES,
