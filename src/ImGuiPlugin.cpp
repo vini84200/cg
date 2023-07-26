@@ -4,20 +4,19 @@
 
 #include "ImGuiPlugin.h"
 #include "Window.h"
-#include "GLFW/glfw3.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+//
+#include "GLFW/glfw3.h"
 
-ImGuiPlugin::ImGuiPlugin() {
-
-}
+ImGuiPlugin::ImGuiPlugin() {}
 
 void ImGuiPlugin::init() {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO &io = ImGui::GetIO();
-    (void) io;
+    (void)io;
 
     ImGui::StyleColorsDark();
 
@@ -43,19 +42,14 @@ void ImGuiPlugin::render() {
 
     ImGui::Render();
     int display_w, display_h;
-    glfwGetFramebufferSize(glfwGetCurrentContext(), &display_w, &display_h);
-//    glViewport(0, 0, display_w, display_h);
+    glfwGetFramebufferSize(glfwGetCurrentContext(), &display_w,
+                           &display_h);
+    //    glViewport(0, 0, display_w, display_h);
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
-void ImGuiPlugin::shutdown() {
+void ImGuiPlugin::shutdown() {}
 
-}
+void ImGuiPlugin::setWindow(Window *window) { window_ = window; }
 
-void ImGuiPlugin::setWindow(Window *window) {
-    window_ = window;
-}
-
-void ImGuiPlugin::update(float dt) {
-
-}
+void ImGuiPlugin::update(float dt) {}

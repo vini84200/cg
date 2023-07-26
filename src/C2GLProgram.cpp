@@ -17,7 +17,8 @@ void C2GLProgram::setModelMatrix(const glm::mat4 &modelMatrix) {
 }
 
 void C2GLProgram::updateNormalMatrix() {
-    this->normalMatrix = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
+    this->normalMatrix
+        = glm::transpose(glm::inverse(glm::mat3(modelMatrix)));
 }
 
 const glm::mat4 &C2GLProgram::getViewMatrix() const {
@@ -33,7 +34,8 @@ const glm::mat4 &C2GLProgram::getProjectionMatrix() const {
     return projectionMatrix;
 }
 
-void C2GLProgram::setProjectionMatrix(const glm::mat4 &projectionMatrix) {
+void C2GLProgram::setProjectionMatrix(
+    const glm::mat4 &projectionMatrix) {
     C2GLProgram::projectionMatrix = projectionMatrix;
 }
 
@@ -42,17 +44,13 @@ const glm::mat3 &C2GLProgram::getNormalMatrix() const {
 }
 
 
-const Material &C2GLProgram::getMaterial() const {
-    return material;
-}
+const Material &C2GLProgram::getMaterial() const { return material; }
 
 void C2GLProgram::setMaterial(const Material &material) {
     C2GLProgram::material = material;
 }
 
-const glm::vec4 &C2GLProgram::getViewPos() const {
-    return view_pos;
-}
+const glm::vec4 &C2GLProgram::getViewPos() const { return view_pos; }
 
 void C2GLProgram::setViewPos(const glm::vec4 &viewPos) {
     view_pos = viewPos;

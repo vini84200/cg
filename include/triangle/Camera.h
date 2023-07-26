@@ -11,7 +11,7 @@
 class Camera {
 
 
-public:
+  public:
     Camera();
     void renderImGui();
 
@@ -28,14 +28,15 @@ public:
     void onMouseMoveDelta(double dx, double dy);
 
 
-protected:
+  protected:
     glm::vec4 pos{};
-public:
+
+  public:
     const glm::vec4 &getPos() const;
 
     void setPos(const glm::vec4 &pos);
 
-protected:
+  protected:
     glm::vec4 forward{};
 
     float fov;
@@ -45,10 +46,10 @@ protected:
 
 
     glm::vec3 movement_{};
-    bool is_orbital_ = true;
+    bool is_orbital_       = true;
     bool is_mouse_pressed_ = false;
     bool speed_up_{};
 };
 
 
-#endif //TRIANGLE_CAMERA_H
+#endif // TRIANGLE_CAMERA_H

@@ -6,31 +6,33 @@
 #define TRIANGLE_RASTERIZER_H
 
 
-
 #include "C2GLProgram.h"
 #include "Object.h"
 #include "RenderTarget.h"
 #include <vector>
 class Rasterizer {
-public:
+  public:
     Rasterizer() = default;
 
     void renderObject(Object *object);
     void preSortTriangleVertices(std::vector<FragVertex> &vertices);
-    void drawTriangle(FragVertex &top, FragVertex &mid, FragVertex &bot);
-    void drawWireframeTriangle(FragVertex &top, FragVertex &mid, FragVertex &bot);
-    void drawPointsTriangle(FragVertex &top, FragVertex &mid, FragVertex &bot);
-    void drawLine(FragVertex &start, FragVertex& end);
+    void drawTriangle(FragVertex &top, FragVertex &mid,
+                      FragVertex &bot);
+    void drawWireframeTriangle(FragVertex &top, FragVertex &mid,
+                               FragVertex &bot);
+    void drawPointsTriangle(FragVertex &top, FragVertex &mid,
+                            FragVertex &bot);
+    void drawLine(FragVertex &start, FragVertex &end);
 
-    enum RasterizerMode {
-        Wireframe, Solid, Point
-    };
-private:
+    enum RasterizerMode { Wireframe, Solid, Point };
+
+  private:
     RasterizerMode mode;
     RenderTarget *renderTarget;
 
     std::vector<FragVertex> verticesTempBuffer;
-public:
+
+  public:
     RasterizerMode getMode() const;
 
     void setMode(RasterizerMode mode);
@@ -39,24 +41,32 @@ public:
 
     void setRenderTarget(RenderTarget *renderTarget);
 
-private:
-
-    void drawFlatTopTriangle(FragVertex &topL, FragVertex &vertex1, FragVertex &vertex2);
-    void drawFlatBottomTriangle(FragVertex &top, FragVertex &botL, FragVertex &botR);
-    void drawFlatTopTriangleWireframe(FragVertex &topL, FragVertex &vertex1, FragVertex &vertex2);
-    void drawFlatBottomTriangleWireframe(FragVertex &top, FragVertex &botL, FragVertex &botR);
-    FragVertex interpolateVertex(FragVertex &top, FragVertex &bottom, float y);
+  private:
+    void drawFlatTopTriangle(FragVertex &topL, FragVertex &vertex1,
+                             FragVertex &vertex2);
+    void drawFlatBottomTriangle(FragVertex &top, FragVertex &botL,
+                                FragVertex &botR);
+    void drawFlatTopTriangleWireframe(FragVertex &topL,
+                                      FragVertex &vertex1,
+                                      FragVertex &vertex2);
+    void drawFlatBottomTriangleWireframe(FragVertex &top,
+                                         FragVertex &botL,
+                                         FragVertex &botR);
+    FragVertex interpolateVertex(FragVertex &top, FragVertex &bottom,
+                                 float y);
     void scanLine(FragVertex &left, FragVertex &right, int y);
-    void scanLineWireframe(FragVertex &left, FragVertex &right, int y);
+    void scanLineWireframe(FragVertex &left, FragVertex &right,
+                           int y);
 
-    C2GLProgram* program;
+    C2GLProgram *program;
     bool ccw;
-public:
+
+  public:
     bool isCcw() const;
 
     void setCcw(bool ccw);
 
-public:
+  public:
     C2GLProgram &getProgram() const;
 
     void setProgram(C2GLProgram &program);
@@ -66,4 +76,4 @@ public:
 };
 
 
-#endif //TRIANGLE_RASTERIZER_H
+#endif // TRIANGLE_RASTERIZER_H

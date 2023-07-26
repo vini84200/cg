@@ -6,12 +6,12 @@
 #define TRIANGLE_OBJECTFROMFILEIN_H
 
 
-#include <vector>
 #include "Object.h"
+#include <vector>
 
 
 class ObjectFromFileIn : public Object {
-public:
+  public:
     ObjectFromFileIn(std::string path);
     void renderImGui() override;
     std::string getName() const override;
@@ -20,7 +20,7 @@ public:
 
     Material *getMaterial(int index) override;
 
-private:
+  private:
     std::string path;
     std::string name;
 
@@ -28,9 +28,10 @@ private:
     std::vector<CallSpan> callSpans;
 
     int material_count = 0;
-public:
+
+  public:
     void update(float dt) override;
 };
 
 
-#endif //TRIANGLE_OBJECTFROMFILEIN_H
+#endif // TRIANGLE_OBJECTFROMFILEIN_H

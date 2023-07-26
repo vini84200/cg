@@ -5,9 +5,9 @@
 #ifndef TRIANGLE_C2GLPROGRAM_H
 #define TRIANGLE_C2GLPROGRAM_H
 
+#include "Object.h"
 #include "glm/fwd.hpp"
 #include "glm/glm.hpp"
-#include "Object.h"
 #include <cwchar>
 
 
@@ -20,9 +20,11 @@ struct FragVertex {
 
     float wInv;
 
-    static FragVertex interpolate(FragVertex v1, FragVertex v2, float t) {
+    static FragVertex interpolate(FragVertex v1, FragVertex v2,
+                                  float t) {
         return FragVertex(v1.position * (1 - t) + v2.position * t,
-                          v1.positionWorld * (1 - t) + v2.positionWorld * t,
+                          v1.positionWorld * (1 - t)
+                              + v2.positionWorld * t,
                           v1.normal * (1 - t) + v2.normal * t,
                           v1.uv * (1 - t) + v2.uv * t,
                           v1.color * (1 - t) + v2.color * t,
@@ -31,15 +33,17 @@ struct FragVertex {
 
     FragVertex() = default;
 
-    FragVertex(glm::vec4 position, glm::vec4 positionWorld, glm::vec3 normal, glm::vec2 uv, glm::vec4 color) : position(position),
-                                                                                                               normal(normal),
-                                                                                                               uv(uv), wInv{1.0},
-                                                                                                               color(color), positionWorld(positionWorld) {};
+    FragVertex(glm::vec4 position, glm::vec4 positionWorld,
+               glm::vec3 normal, glm::vec2 uv, glm::vec4 color)
+              : position(position), normal(normal), uv(uv), wInv{1.0},
+                color(color), positionWorld(positionWorld){};
 
-    FragVertex(glm::vec4 position,glm::vec4 positionWorld, glm::vec3 normal, glm::vec2 uv, glm::vec4 color, float wInv) : position(position),
-                                                                                                  normal(normal),
-                                                                                                  uv(uv), wInv{wInv},
-                                                                                                  color(color), positionWorld(positionWorld) {};
+    FragVertex(glm::vec4 position, glm::vec4 positionWorld,
+               glm::vec3 normal, glm::vec2 uv, glm::vec4 color,
+               float wInv)
+              : position(position), normal(normal), uv(uv),
+                wInv{wInv}, color(color),
+                positionWorld(positionWorld){};
 
     void perpectiveDivide() {
         float w = position.w;
@@ -55,7 +59,6 @@ struct FragVertex {
         uv /= wInv;
         positionWorld /= wInv;
     }
-
 };
 
 struct Pixel {
@@ -65,7 +68,7 @@ struct Pixel {
 
 class C2GLProgram {
 
-public:
+  public:
     const glm::mat4 &getModelMatrix() const;
     void setModelMatrix(const glm::mat4 &modelMatrix);
     const glm::mat4 &getViewMatrix() const;
@@ -76,16 +79,17 @@ public:
     const Material &getMaterial() const;
     void setMaterial(const Material &material);
 
-private:
+  private:
     glm::mat4 modelMatrix;
     glm::mat4 viewMatrix;
     glm::mat4 projectionMatrix;
 
     Material material;
 
-protected:
+  protected:
     glm::mat3 normalMatrix;
-public:
+
+  public:
     virtual FragVertex vertexShader(const Vertex &vertex) const = 0;
 
     virtual Pixel fragmentShader(FragVertex &vertex) = 0;
@@ -100,5 +104,4 @@ public:
 };
 
 
-
-#endif //TRIANGLE_C2GLPROGRAM_H
+#endif // TRIANGLE_C2GLPROGRAM_H

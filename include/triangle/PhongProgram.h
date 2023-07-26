@@ -5,7 +5,7 @@
 
 class PhongProgram : public C2GLProgram {
 
-public:
+  public:
     PhongProgram() = default;
 
     FragVertex vertexShader(const Vertex &vertex) const override;

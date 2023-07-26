@@ -8,13 +8,13 @@
 
 #include "Camera.h"
 #include "Renderer.h"
+#include <array>
 #include <memory>
 #include <vector>
-#include <array>
 
 
 class RendererSimple : public Renderer {
-public:
+  public:
     RendererSimple();
 
     void render(Scene *scene, Camera *camera) override;
@@ -25,15 +25,10 @@ public:
 
     std::string getName() const override;
 
-private:
-
+  private:
     std::shared_ptr<Camera> camera;
     GLuint program;
-    enum RenderType {
-        TRIANGLES,
-        LINES,
-        POINTS
-    };
+    enum RenderType { TRIANGLES, LINES, POINTS };
     RenderType renderType = TRIANGLES;
 
     enum ShaderSubroutine {
@@ -51,13 +46,13 @@ private:
     void renderObject(std::shared_ptr<Object> object);
 
     bool backFaceCulling_ = true;
-    bool ccw_ = false;
-    bool colorOverride_ = false;
-    glm::vec3 newColor = glm::vec3(1, 1, 1);
+    bool ccw_             = false;
+    bool colorOverride_   = false;
+    glm::vec3 newColor    = glm::vec3(1, 1, 1);
 
     GLint lightModelVSLocation;
     GLint lightModelFSLocation;
 };
 
 
-#endif //TRIANGLE_RENDERERSIMPLE_H
+#endif // TRIANGLE_RENDERERSIMPLE_H

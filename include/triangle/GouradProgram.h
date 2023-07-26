@@ -5,7 +5,7 @@
 
 class GouradProgram : public C2GLProgram {
 
-public:
+  public:
     GouradProgram() = default;
 
     FragVertex vertexShader(const Vertex &vertex) const override;

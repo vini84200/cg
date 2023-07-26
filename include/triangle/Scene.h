@@ -6,24 +6,24 @@
 #define TRIANGLE_SCENE_H
 
 
+#include "Object.h"
 #include <memory>
 #include <vector>
-#include "Object.h"
 
 class Scene {
-public:
+  public:
     Scene();
 
-    void addObject( std::shared_ptr<Object> object );
-    void removeObject( std::shared_ptr<Object> object );
+    void addObject(std::shared_ptr<Object> object);
+    void removeObject(std::shared_ptr<Object> object);
 
     std::vector<std::shared_ptr<Object>> getObjects();
     void renderImGui();
     void update(float dt);
 
-private:
+  private:
     std::vector<std::shared_ptr<Object>> objects;
 };
 
 
-#endif //TRIANGLE_SCENE_H
+#endif // TRIANGLE_SCENE_H

@@ -47,6 +47,7 @@ add_executable(
   src/C2GLProgram.cpp
   src/PhongProgram.cpp
   src/GouradProgram.cpp
+  src/Texture.cpp
   )
 target_include_directories(triangle PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(triangle
@@ -109,6 +110,18 @@ option(TRACY_ENABLE "Enable Tracy" OFF)
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${TRACY_INCLUDE_DIR})
 message(STATUS "TRACY_INCLUDE_DIR: ${TRACY_INCLUDE_DIR}")
+
+
+FetchContent_Declare(
+    stb
+    GIT_REPOSITORY https://github.com/nothings/stb.git
+    GIT_TAG master
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE
+    )
+FetchContent_MakeAvailable(stb)
+include_directories(${stb_SOURCE_DIR})
+
 
 target_link_libraries(${PROJECT_NAME} PUBLIC glad glfw glm imgui nfd
                                              TracyClient)

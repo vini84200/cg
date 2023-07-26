@@ -2,23 +2,22 @@
 // Created by vini84200 on 6/1/23.
 //
 
-#include <cstdio>
-#include <stdexcept>
 #include "Scene.h"
+#include "ObjectFromFileIn.h"
 #include "imgui.h"
 #include "nfd.h"
-#include "ObjectFromFileIn.h"
+#include <cstdio>
+#include <stdexcept>
 
-Scene::Scene() {
-    NFD_Init();
-}
+Scene::Scene() { NFD_Init(); }
 
 void Scene::addObject(std::shared_ptr<Object> object) {
     objects.push_back(object);
 }
 
 void Scene::removeObject(std::shared_ptr<Object> object) {
-//    objects.erase( std::remove( objects.begin(), objects.end(), object ), objects.end() );
+    //    objects.erase( std::remove( objects.begin(), objects.end(),
+    //    object ), objects.end() );
     throw std::runtime_error("Not implemented");
 }
 
@@ -33,34 +32,42 @@ void Scene::renderImGui() {
 
         if (ImGui::Button("Add Object")) {
             // Open file dialog
-            nfdchar_t *outPath = nullptr;
-            nfdfilteritem_t filterItem[3] = {{"OBJ Files", "obj"},
-                                             {"Custom 3D", "in"},
-                                             {"All files", "*"}};
-            nfdresult_t result = NFD_OpenDialog(&outPath, filterItem, 3, nullptr);
+            nfdchar_t *outPath            = nullptr;
+            nfdfilteritem_t filterItem[3] = {
+                {"OBJ Files", "obj"},
+                {"Custom 3D",  "in"},
+                {"All files",   "*"}
+            };
+            nfdresult_t result
+                = NFD_OpenDialog(&outPath, filterItem, 3, nullptr);
 
             if (result == NFD_OKAY) {
                 std::string path(outPath);
                 printf("Path: %s\n", path.c_str());
                 // Get file extension
-                std::string extension = path.substr(path.find_last_of(".") + 1);
+                std::string extension
+                    = path.substr(path.find_last_of(".") + 1);
                 printf("Extension: %s\n", extension.c_str());
                 if (extension == "obj") {
-//                    std::shared_ptr<Object> object = std::make_shared<ObjectFromFileIn>(path);
-//                    addObject(object);
-            } else if (extension == "in") {
-                std::shared_ptr<Object> object = std::make_shared<ObjectFromFileIn>(path);
-                addObject(object);
+                    //                    std::shared_ptr<Object>
+                    //                    object =
+                    //                    std::make_shared<ObjectFromFileIn>(path);
+                    //                    addObject(object);
+                } else if (extension == "in") {
+                    std::shared_ptr<Object> object
+                        = std::make_shared<ObjectFromFileIn>(path);
+                    addObject(object);
+                } else {
+                    throw std::runtime_error(
+                        "Invalid file extension");
+                }
+                NFD_FreePath(outPath);
+            } else if (result == NFD_CANCEL) {
+                // Do nothing
             } else {
-                throw std::runtime_error("Invalid file extension");
+                throw std::runtime_error("Error opening file dialog");
             }
-            NFD_FreePath(outPath);
-        } else if (result == NFD_CANCEL) {
-            // Do nothing
-        } else {
-            throw std::runtime_error("Error opening file dialog");
         }
-    }
 
         for (auto &object : objects) {
             if (ImGui::TreeNode(object->getName().c_str())) {
@@ -73,7 +80,7 @@ void Scene::renderImGui() {
 }
 
 void Scene::update(float dt) {
-    for (auto &object: objects) {
+    for (auto &object : objects) {
         object->update(dt);
     }
 }

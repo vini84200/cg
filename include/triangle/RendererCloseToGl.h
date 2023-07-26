@@ -8,8 +8,8 @@
 
 #include "Renderer.h"
 
-class RendererCloseToGl: public Renderer {
-public:
+class RendererCloseToGl : public Renderer {
+  public:
     RendererCloseToGl();
 
     void render(Scene *scene, Camera *camera) override;
@@ -28,24 +28,19 @@ public:
 
     void onResize(int width, int height) override;
 
-private:
-
+  private:
     std::shared_ptr<Camera> camera;
     GLuint program;
-    enum RenderType {
-        TRIANGLES,
-        LINES,
-        POINTS
-    };
+    enum RenderType { TRIANGLES, LINES, POINTS };
     RenderType renderType = TRIANGLES;
 
     void renderObject(std::shared_ptr<Object> object);
 
     bool backFaceCulling_ = true;
-    bool ccw_ = false;
-    bool colorOverride_ = false;
-    glm::vec3 newColor = glm::vec3(1, 1, 1);
+    bool ccw_             = false;
+    bool colorOverride_   = false;
+    glm::vec3 newColor    = glm::vec3(1, 1, 1);
 };
 
 
-#endif //TRIANGLE_RENDERERCLOSETOGL_H
+#endif // TRIANGLE_RENDERERCLOSETOGL_H

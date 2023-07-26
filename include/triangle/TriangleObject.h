@@ -9,8 +9,8 @@
 #include "Object.h"
 #include "ObjectFromFileIn.h"
 
-class TriangleObject : public Object{
-public:
+class TriangleObject : public Object {
+  public:
     TriangleObject();
 
     void renderImGui() override;
@@ -27,4 +27,4 @@ public:
 };
 
 
-#endif //TRIANGLE_TRIANGLEOBJECT_H
+#endif // TRIANGLE_TRIANGLEOBJECT_H

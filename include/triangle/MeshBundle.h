@@ -13,16 +13,15 @@ enum Buffer_IDs { PositionBuffer, NormalsBuffer, NumBuffers };
 enum Attrib_IDs { vPosition = 0, vNormals = 1 };
 
 class MeshBundle {
-public:
+  public:
     MeshBundle();
 
-    MeshBundle fromFile(const char* path);
+    MeshBundle fromFile(const char *path);
 
 
-private:
+  private:
     GLuint NumVertices = 6;
-
 };
 
 
-#endif //TRIANGLE_MESHBUNDLE_H
+#endif // TRIANGLE_MESHBUNDLE_H

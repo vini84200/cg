@@ -12,8 +12,7 @@ class Window;
 class ImGuiPlugin {
 
 
-
-public:
+  public:
     ImGuiPlugin();
 
     void render();
@@ -21,13 +20,13 @@ public:
     void init();
     void shutdown();
 
-    void setWindow(Window* window);
+    void setWindow(Window *window);
 
     bool demo_ = false;
-    Window* window_;
+    Window *window_;
 
     void update(float dt);
 };
 
 
-#endif //TRIANGLE_IMGUIPLUGIN_H
+#endif // TRIANGLE_IMGUIPLUGIN_H

@@ -6,13 +6,15 @@
 #define TRIANGLE_WINDOW_H
 
 #include "Camera.h"
-#include "ImGuiPlugin.h"
-#include "Object.h"
-#include "glad/glad.h"
+#include <glad/glad.h>
+//
 #include "GLFW/glfw3.h"
-#include "Renderer.h"
 #include <memory>
 #include <vector>
+//
+#include "ImGuiPlugin.h"
+#include "Object.h"
+#include "Renderer.h"
 
 const GLuint NumVertices = 6;
 
@@ -23,8 +25,7 @@ const GLuint NumVertices = 6;
  * It also handles the main loop for drawing and updating the scene.
  */
 class Window {
-public:
-
+  public:
     /**
      * Creates a window.
      */
@@ -48,32 +49,35 @@ public:
 
 
     bool show_gui_ = true;
-private:
+
+  private:
     void initialize();
     void update(float deltatime);
     void render();
     void terminate();
 
     /**
-     * Callback for errors in GLFW, handles errors and throws exceptions.
+     * Callback for errors in GLFW, handles errors and throws
+     * exceptions.
      * @param error The error code.
      * @param description The error description.
      */
-    static void onError(int error, const char* description);
+    static void onError(int error, const char *description);
 
-    GLFWwindow* window_; ///< The GLFW window
+    GLFWwindow *window_; ///< The GLFW window
 
     std::unique_ptr<Renderer> renderer_;
-public:
+
+  public:
     GLFWwindow *getWindow() const;
 
     void setWindow(GLFWwindow *window);
 
-private:
+  private:
     ///< The renderer
     std::unique_ptr<Camera> camera_; ///< The camera
-    std::unique_ptr<Scene> scene_; ///< The scene
-    ImGuiPlugin imguiPlugin_; ///< The ImGui plugin
+    std::unique_ptr<Scene> scene_;   ///< The scene
+    ImGuiPlugin imguiPlugin_;        ///< The ImGui plugin
     void onKeyPressed(int key, int scancode, int action, int mods);
 
     void onWindowResized(int w, int h);
@@ -89,4 +93,4 @@ private:
 };
 
 
-#endif //TRIANGLE_WINDOW_H
+#endif // TRIANGLE_WINDOW_H
