@@ -155,6 +155,50 @@ ColorPixel Texture::samplePointBilinear(float s, float t) const {
 ColorPixel Texture::samplePointTrilinear(float s, float t, float ds,
                                          float dt) const {
     // TODO
-    // const float level = (float) (log(std::max(ds*tex_width)))
-    return {};
+    float x           = s * (width - 1);
+    float y           = t * (height - 1);
+    const float level = std::max(
+        (float)(log(std::max(ds * width, dt * height)) / log(2.0)),
+        1.0f);
+    const int lowLevel = std::floor(level);
+    const float lowX   = x / std::pow(2, lowLevel);
+    const float lowY   = y / std::pow(2, lowLevel);
+
+    const ColorPixel a
+        = getTexel(std::floor(lowX), std::floor(lowY), lowLevel);
+    const ColorPixel b
+        = getTexel(std::ceil(lowX), std::floor(lowY), lowLevel);
+    const ColorPixel c
+        = getTexel(std::floor(lowX), std::ceil(lowY), lowLevel);
+    const ColorPixel d
+        = getTexel(std::ceil(lowX), std::ceil(lowY), lowLevel);
+    const ColorPixel ab
+        = ColorPixel::lerp(a, b, lowX - std::floor(lowX));
+    const ColorPixel cd
+        = ColorPixel::lerp(c, d, lowX - std::floor(lowX));
+    const ColorPixel low
+        = ColorPixel::lerp(ab, cd, lowY - std::floor(lowY));
+
+    const int highLevel = std::ceil(level);
+    const float highX   = x / std::pow(2, highLevel);
+    const float highY   = y / std::pow(2, highLevel);
+
+    const ColorPixel A
+        = getTexel(std::floor(highX), std::floor(highY), highLevel);
+    const ColorPixel B
+        = getTexel(std::ceil(highX), std::floor(highY), highLevel);
+    const ColorPixel C
+        = getTexel(std::floor(highX), std::ceil(highY), highLevel);
+    const ColorPixel D
+        = getTexel(std::ceil(highX), std::ceil(highY), highLevel);
+    const ColorPixel AB
+        = ColorPixel::lerp(A, B, highX - std::floor(highX));
+    const ColorPixel CD
+        = ColorPixel::lerp(C, D, highX - std::floor(highX));
+    const ColorPixel high
+        = ColorPixel::lerp(AB, CD, highY - std::floor(highY));
+
+    const ColorPixel res
+        = ColorPixel::lerp(low, high, level - lowLevel);
+    return res;
 }

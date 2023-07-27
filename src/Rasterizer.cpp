@@ -6,6 +6,7 @@
 #include "C2GLProgram.h"
 #include "Object.h"
 #include "RenderTarget.h"
+#include "glm/fwd.hpp"
 #include "glm/geometric.hpp"
 #include "glm/gtc/epsilon.hpp"
 #include <array>
@@ -290,11 +291,20 @@ void Rasterizer::drawFlatTopTriangle(FragVertex &topL,
                                      FragVertex &topR,
                                      FragVertex &bot) {
     ZoneScoped;
-    int initialY = std::ceil(topL.position.y);
-    int finalY   = std::ceil(bot.position.y);
+    float heigh     = bot.position.y - topL.position.y;
+    int initialY    = std::ceil(topL.position.y);
+    int finalY      = std::ceil(bot.position.y);
+    glm::vec2 lduv  = (topL.uv - bot.uv) / heigh;
+    FragVertex botL = bot;
+    botL.duv        = lduv;
+    topL.duv        = lduv;
+    glm::vec2 rduv  = (topR.uv - bot.uv) / heigh;
+    FragVertex botR = bot;
+    botR.duv        = rduv;
+    topR.duv        = rduv;
     for (int y = initialY; y < finalY; y++) {
-        FragVertex left  = interpolateVertex(topL, bot, y);
-        FragVertex right = interpolateVertex(topR, bot, y);
+        FragVertex left  = interpolateVertex(topL, botL, y);
+        FragVertex right = interpolateVertex(topR, botR, y);
         scanLine(left, right, y);
     }
 }
@@ -303,8 +313,17 @@ void Rasterizer::drawFlatBottomTriangle(FragVertex &top,
                                         FragVertex &botL,
                                         FragVertex &botR) {
     ZoneScoped;
-    int initialY = std::ceil(top.position.y);
-    int finalY   = std::ceil(botL.position.y);
+    float heigh     = botL.position.y - top.position.y;
+    int initialY    = std::ceil(top.position.y);
+    int finalY      = std::ceil(botL.position.y);
+    glm::vec2 lduv  = (top.uv - botL.uv) / heigh;
+    FragVertex topL = top;
+    topL.duv        = lduv;
+    botL.duv        = lduv;
+    FragVertex topR = top;
+    // topL.duv =
+
+    float rduv = (top.uv.s - botR.uv.s) / heigh;
     for (int y = initialY; y < finalY; y++) {
         FragVertex left  = interpolateVertex(top, botL, y);
         FragVertex right = interpolateVertex(top, botR, y);

@@ -16,6 +16,7 @@ struct FragVertex {
     glm::vec4 positionWorld;
     glm::vec3 normal;
     glm::vec2 uv;
+    glm::vec2 duv;
     glm::vec4 color;
 
     float wInv;
@@ -27,6 +28,7 @@ struct FragVertex {
                               + v2.positionWorld * t,
                           v1.normal * (1 - t) + v2.normal * t,
                           v1.uv * (1 - t) + v2.uv * t,
+                          v1.duv * (1 - t) + v2.duv * t,
                           v1.color * (1 - t) + v2.color * t,
                           v1.wInv * (1 - t) + v2.wInv * t);
     }
@@ -39,11 +41,18 @@ struct FragVertex {
                 color(color), positionWorld(positionWorld){};
 
     FragVertex(glm::vec4 position, glm::vec4 positionWorld,
-               glm::vec3 normal, glm::vec2 uv, glm::vec4 color,
-               float wInv)
+               glm::vec3 normal, glm::vec2 uv, glm::vec2 duv,
+               glm::vec4 color)
+              : position(position), normal(normal), uv(uv), wInv{1.0},
+                color(color), positionWorld(positionWorld),
+                duv(duv){};
+
+    FragVertex(glm::vec4 position, glm::vec4 positionWorld,
+               glm::vec3 normal, glm::vec2 uv, glm::vec2 duv,
+               glm::vec4 color, float wInv)
               : position(position), normal(normal), uv(uv),
                 wInv{wInv}, color(color),
-                positionWorld(positionWorld){};
+                positionWorld(positionWorld), duv(duv){};
 
     void perpectiveDivide() {
         float w = position.w;
@@ -51,12 +60,14 @@ struct FragVertex {
         positionWorld /= w;
         normal /= w;
         uv /= w;
+        duv /= w;
         wInv = 1.0f / w;
     }
 
     void finish() {
         normal /= wInv;
         uv /= wInv;
+        duv /= wInv;
         positionWorld /= wInv;
     }
 };
