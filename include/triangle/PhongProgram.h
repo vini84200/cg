@@ -10,7 +10,7 @@ class PhongProgram : public C2GLProgram {
 
     FragVertex vertexShader(const Vertex &vertex) const override;
 
-    Pixel fragmentShader(FragVertex &vertex) override;
+    Pixel fragmentShader(FragVertex &vertex, glm::vec2 deltaUv) override;
 };
 
 #endif // DEBUG

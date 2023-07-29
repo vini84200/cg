@@ -3,20 +3,22 @@
 #include <GL/gl.h>
 #include <algorithm>
 #include <cmath>
+#include <cstdio>
 #include <memory>
 #include <stdexcept>
 
 
 #define STB_IMAGE_IMPLEMENTATION
+
 #include <stb_image.h>
 
 
 Texture::Texture() {
     textureData = std::make_shared<TextureBuffer>();
     textureData->emplace_back();
-    width        = 1;
-    height       = 1;
-    mipLevels    = 0;
+    width = 1;
+    height = 1;
+    mipLevels = 0;
     textureIndex = -1;
 }
 
@@ -28,7 +30,7 @@ Texture::Texture(const TextureBuffer &data, int width, int height) {
     mipLevels = 0;
     mipmapOffset.emplace_back(0);
     mipmapWidths.emplace_back(width);
-    this->width  = width;
+    this->width = width;
     this->height = height;
 
     glGenTextures(1, &textureIndex);
@@ -45,12 +47,13 @@ Texture::Texture(const TextureBuffer &data, int width, int height) {
     glGenerateMipmap(GL_TEXTURE_2D);
 }
 
-Texture::Texture(std::string path) {
-    textureData  = std::make_shared<TextureBuffer>();
+Texture::Texture(std::string path) :
+        path(path) {
+    textureData = std::make_shared<TextureBuffer>();
     int channels = -1;
     stbi_set_flip_vertically_on_load(true);
     unsigned char *data
-        = stbi_load(path.c_str(), &width, &height, &channels, 4);
+            = stbi_load(path.c_str(), &width, &height, &channels, 4);
     if (data) {
         for (int i = 0; i < width * height * 4; i += 4) {
             textureData->emplace_back(data[i], data[i + 1],
@@ -75,9 +78,15 @@ Texture::Texture(std::string path) {
 
         stbi_image_free(data);
 
+        int maxDimension = std::max(width, height);
+        int mipLevels = std::log2(maxDimension);
+        printf("Mip levels: %d\n", mipLevels);
+
+        generateMipMaps(mipLevels);
+
     } else {
-        throw new std::runtime_error(
-            "Failed to load the image texture: " + path);
+        throw std::runtime_error(
+                "Failed to load the image texture: " + path);
     }
 }
 
@@ -87,32 +96,32 @@ void Texture::generateMipMaps(int levels) {
         return;
     }
     for (int i = 0; i <= levels; i++) {
-        if (levels >= i) {
+        if (mipLevels > i) {
             continue;
         }
         mipmapOffset.emplace_back(textureData->size());
         int levelWidth = getLevelWidht(i);
         mipmapWidths.emplace_back(levelWidth);
         int levelHeight = getLevelHeight(i);
+        mipLevels++;
         for (int t = 0; t < levelHeight; t++) {
             for (int s = 0; s < levelWidth; s++) {
                 // Calculate the color pixel of the 4 original pixels
                 const ColorPixel a = getTexel(s * 2, t * 2, i - 1);
                 const ColorPixel b
-                    = getTexel(s * 2 + 1, t * 2, i - 1);
+                        = getTexel(s * 2 + 1, t * 2, i - 1);
                 const ColorPixel c
-                    = getTexel(s * 2, t * 2 + 1, i - 1);
+                        = getTexel(s * 2, t * 2 + 1, i - 1);
                 const ColorPixel d
-                    = getTexel(s * 2 + 1, t * 2 + 1, i - 1);
+                        = getTexel(s * 2 + 1, t * 2 + 1, i - 1);
 
                 const ColorPixel ab = ColorPixel::lerp(a, b, 0.5f);
                 const ColorPixel cd = ColorPixel::lerp(c, d, 0.5f);
                 const ColorPixel interpolated
-                    = ColorPixel::lerp(ab, cd, 0.5f);
+                        = ColorPixel::lerp(ab, cd, 0.5f);
                 textureData->emplace_back(interpolated);
             }
         }
-        levels++;
     }
 }
 
@@ -121,12 +130,12 @@ ColorPixel Texture::samplePoint(float s, float t, float ds,
     s = std::clamp(s, 0.f, 1.f);
     t = std::clamp(t, 0.f, 1.f);
     switch (textureSamplerType) {
-    case TextureSampler::NearestNeighbour:
-        return samplePointNearestNeighbour(s, t);
-    case TextureSampler::Bilinear:
-        return samplePointBilinear(s, t);
-    case TextureSampler::Trilinear:
-        return samplePointTrilinear(s, t, ds, dt);
+        case TextureSampler::NearestNeighbour:
+            return samplePointNearestNeighbour(s, t);
+        case TextureSampler::Bilinear:
+            return samplePointBilinear(s, t);
+        case TextureSampler::Trilinear:
+            return samplePointTrilinear(s, t, ds, dt);
     }
 }
 
@@ -139,66 +148,97 @@ ColorPixel Texture::samplePointNearestNeighbour(float s,
 
 ColorPixel Texture::samplePointBilinear(float s, float t) const {
     // Get the 4 nearest points, and interpolate between them
-    float x             = s * (width - 1);
-    float y             = t * (height - 1);
-    const ColorPixel a  = getTexel(std::floor(x), std::floor(y), 0);
-    const ColorPixel b  = getTexel(std::ceil(x), std::floor(y), 0);
-    const ColorPixel c  = getTexel(std::floor(x), std::ceil(y), 0);
-    const ColorPixel d  = getTexel(std::ceil(x), std::ceil(y), 0);
+    float x = s * (width - 1);
+    float y = t * (height - 1);
+    const ColorPixel a = getTexel(std::floor(x), std::floor(y), 0);
+    const ColorPixel b = getTexel(std::ceil(x), std::floor(y), 0);
+    const ColorPixel c = getTexel(std::floor(x), std::ceil(y), 0);
+    const ColorPixel d = getTexel(std::ceil(x), std::ceil(y), 0);
     const ColorPixel ab = ColorPixel::lerp(a, b, x - std::floor(x));
     const ColorPixel cd = ColorPixel::lerp(c, d, x - std::floor(x));
     const ColorPixel res
-        = ColorPixel::lerp(ab, cd, y - std::floor(y));
+            = ColorPixel::lerp(ab, cd, y - std::floor(y));
     return res;
 }
 
 ColorPixel Texture::samplePointTrilinear(float s, float t, float ds,
                                          float dt) const {
     // TODO
-    float x           = s * (width - 1);
-    float y           = t * (height - 1);
-    const float level = std::max(
-        (float)(log(std::max(ds * width, dt * height)) / log(2.0)),
-        1.0f);
+    float x = s * (width - 1);
+    float y = t * (height - 1);
+
+    float level = std::max(
+           (float) (log(std::max(ds * width, dt * height)) / log(2.0)),
+            1.0f) - 1;
+
+    if (std::ceil(level) >= mipLevels)
+        level = mipLevels - 1;
+
+    if (level < 0 || isnan(level))
+        return samplePointBilinear(s, t);
+
     const int lowLevel = std::floor(level);
-    const float lowX   = x / std::pow(2, lowLevel);
-    const float lowY   = y / std::pow(2, lowLevel);
+    float lowX = x / std::pow(2, lowLevel);
+    float lowY = y / std::pow(2, lowLevel);
+
+    if (lowX > getWidth() - 1)
+        lowX = getWidth() - 1;
+    if (lowY > getHeight() - 1)
+        lowY = getHeight() - 1;
+
 
     const ColorPixel a
-        = getTexel(std::floor(lowX), std::floor(lowY), lowLevel);
+            = getTexel(std::floor(lowX), std::floor(lowY), lowLevel);
     const ColorPixel b
-        = getTexel(std::ceil(lowX), std::floor(lowY), lowLevel);
+            = getTexel(std::ceil(lowX), std::floor(lowY), lowLevel);
     const ColorPixel c
-        = getTexel(std::floor(lowX), std::ceil(lowY), lowLevel);
+            = getTexel(std::floor(lowX), std::ceil(lowY), lowLevel);
     const ColorPixel d
-        = getTexel(std::ceil(lowX), std::ceil(lowY), lowLevel);
+            = getTexel(std::ceil(lowX), std::ceil(lowY), lowLevel);
     const ColorPixel ab
-        = ColorPixel::lerp(a, b, lowX - std::floor(lowX));
+            = ColorPixel::lerp(a, b, lowX - std::floor(lowX));
     const ColorPixel cd
-        = ColorPixel::lerp(c, d, lowX - std::floor(lowX));
+            = ColorPixel::lerp(c, d, lowX - std::floor(lowX));
     const ColorPixel low
-        = ColorPixel::lerp(ab, cd, lowY - std::floor(lowY));
+            = ColorPixel::lerp(ab, cd, lowY - std::floor(lowY));
 
     const int highLevel = std::ceil(level);
-    const float highX   = x / std::pow(2, highLevel);
-    const float highY   = y / std::pow(2, highLevel);
+    float highX = x / std::pow(2, highLevel);
+    float highY = y / std::pow(2, highLevel);
+
+    if (highX > getWidth() - 1)
+        highX = getWidth() - 1;
+    if (highY > getHeight() - 1)
+        highY = getHeight() - 1;
 
     const ColorPixel A
-        = getTexel(std::floor(highX), std::floor(highY), highLevel);
+            = getTexel(std::floor(highX), std::floor(highY), highLevel);
     const ColorPixel B
-        = getTexel(std::ceil(highX), std::floor(highY), highLevel);
+            = getTexel(std::ceil(highX), std::floor(highY), highLevel);
     const ColorPixel C
-        = getTexel(std::floor(highX), std::ceil(highY), highLevel);
+            = getTexel(std::floor(highX), std::ceil(highY), highLevel);
     const ColorPixel D
-        = getTexel(std::ceil(highX), std::ceil(highY), highLevel);
+            = getTexel(std::ceil(highX), std::ceil(highY), highLevel);
     const ColorPixel AB
-        = ColorPixel::lerp(A, B, highX - std::floor(highX));
+            = ColorPixel::lerp(A, B, highX - std::floor(highX));
     const ColorPixel CD
-        = ColorPixel::lerp(C, D, highX - std::floor(highX));
+            = ColorPixel::lerp(C, D, highX - std::floor(highX));
     const ColorPixel high
-        = ColorPixel::lerp(AB, CD, highY - std::floor(highY));
+            = ColorPixel::lerp(AB, CD, highY - std::floor(highY));
 
     const ColorPixel res
-        = ColorPixel::lerp(low, high, level - lowLevel);
+            = ColorPixel::lerp(low, high, level - lowLevel);
     return res;
+}
+
+std::string Texture::getTexturePath() {
+    return path;
+}
+
+bool Texture::hasMipmaps() {
+    return mipLevels > 1;
+}
+
+int Texture::getMipmaps() {
+    return mipLevels;
 }

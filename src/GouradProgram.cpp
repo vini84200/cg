@@ -43,9 +43,8 @@ FragVertex GouradProgram::vertexShader(const Vertex &vertex) const {
     };
 }
 
-Pixel GouradProgram::fragmentShader(FragVertex &vertex) {
+Pixel GouradProgram::fragmentShader(FragVertex &vertex, glm::vec2 deltaUv) {
     ZoneScoped;
-
     return {vertex.color, vertex.position.z};
 }
 

@@ -103,7 +103,7 @@ class C2GLProgram {
   public:
     virtual FragVertex vertexShader(const Vertex &vertex) const = 0;
 
-    virtual Pixel fragmentShader(FragVertex &vertex) = 0;
+    virtual Pixel fragmentShader(FragVertex &vertex, glm::vec2 deltaUv) = 0;
 
     const glm::vec4 &getViewPos() const;
 

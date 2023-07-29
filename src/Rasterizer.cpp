@@ -185,7 +185,7 @@ void Rasterizer::drawLine(FragVertex &start, FragVertex &end) {
                   / (end.position.x - start.position.x);
         vertex = FragVertex::interpolate(start, end, t);
         vertex.finish();
-        Pixel pixel = program->fragmentShader(vertex);
+        Pixel pixel = program->fragmentShader(vertex, glm::vec2());
 
         renderTarget->checkAndSetPixel(
             x0, y0, ColorPixel(pixel.color), DepthPixel(pixel.depth));
@@ -207,7 +207,7 @@ void Rasterizer::drawPointsTriangle(FragVertex &top, FragVertex &mid,
     // Set three points
     // Top
     top.finish();
-    Pixel pixel = program->fragmentShader(top);
+    Pixel pixel = program->fragmentShader(top, glm::vec2());
     ColorPixel color(pixel.color);
     DepthPixel depth(pixel.depth);
     renderTarget->checkAndSetPixel(std::ceil(top.position.x),
@@ -215,7 +215,7 @@ void Rasterizer::drawPointsTriangle(FragVertex &top, FragVertex &mid,
                                    depth);
 
     mid.finish();
-    pixel = program->fragmentShader(mid);
+    pixel = program->fragmentShader(mid, glm::vec2());
     color = ColorPixel(pixel.color);
     depth = DepthPixel(pixel.depth);
     renderTarget->checkAndSetPixel(std::ceil(mid.position.x),
@@ -223,7 +223,7 @@ void Rasterizer::drawPointsTriangle(FragVertex &top, FragVertex &mid,
                                    depth);
 
     bot.finish();
-    pixel = program->fragmentShader(bot);
+    pixel = program->fragmentShader(bot, glm::vec2());
     color = ColorPixel(pixel.color);
     depth = DepthPixel(pixel.depth);
     renderTarget->checkAndSetPixel(std::ceil(bot.position.x),
@@ -291,20 +291,16 @@ void Rasterizer::drawFlatTopTriangle(FragVertex &topL,
                                      FragVertex &topR,
                                      FragVertex &bot) {
     ZoneScoped;
-    float heigh     = bot.position.y - topL.position.y;
     int initialY    = std::ceil(topL.position.y);
     int finalY      = std::ceil(bot.position.y);
-    glm::vec2 lduv  = (topL.uv - bot.uv) / heigh;
-    FragVertex botL = bot;
-    botL.duv        = lduv;
-    topL.duv        = lduv;
-    glm::vec2 rduv  = (topR.uv - bot.uv) / heigh;
-    FragVertex botR = bot;
-    botR.duv        = rduv;
-    topR.duv        = rduv;
+    glm::vec2 deltaUvLeft = (bot.uv - topL.uv) / (bot.position.y - topL.position.y);
+    glm::vec2 deltaUvRight = (bot.uv - topR.uv) / (bot.position.y - topR.position.y);
+
     for (int y = initialY; y < finalY; y++) {
-        FragVertex left  = interpolateVertex(topL, botL, y);
-        FragVertex right = interpolateVertex(topR, botR, y);
+        FragVertex left  = interpolateVertex(topL, bot, y);
+        FragVertex right = interpolateVertex(topR, bot, y);
+        left.duv = deltaUvLeft;
+        right.duv = deltaUvRight;
         scanLine(left, right, y);
     }
 }
@@ -313,36 +309,17 @@ void Rasterizer::drawFlatBottomTriangle(FragVertex &top,
                                         FragVertex &botL,
                                         FragVertex &botR) {
     ZoneScoped;
-    float heigh     = botL.position.y - top.position.y;
     int initialY    = std::ceil(top.position.y);
     int finalY      = std::ceil(botL.position.y);
-    glm::vec2 lduv  = (top.uv - botL.uv) / heigh;
-    FragVertex topL = top;
-    topL.duv        = lduv;
-    botL.duv        = lduv;
-    FragVertex topR = top;
-    // topL.duv =
-
-    float rduv = (top.uv.s - botR.uv.s) / heigh;
+    glm::vec2 deltaUvLeft = (botL.uv - top.uv) / (botL.position.y - top.position.y);
+    glm::vec2 deltaUvRight = (botR.uv - top.uv) / (botR.position.y - top.position.y);
     for (int y = initialY; y < finalY; y++) {
         FragVertex left  = interpolateVertex(top, botL, y);
         FragVertex right = interpolateVertex(top, botR, y);
+        left.duv = deltaUvLeft;
+        right.duv = deltaUvRight;
         scanLine(left, right, y);
     }
-}
-
-void Rasterizer::drawFlatTopTriangleWireframe(FragVertex &topL,
-                                              FragVertex &topR,
-                                              FragVertex &bot) {
-    ZoneScoped;
-    // TODO: Implement
-}
-
-void Rasterizer::drawFlatBottomTriangleWireframe(FragVertex &top,
-                                                 FragVertex &botL,
-                                                 FragVertex &botR) {
-    ZoneScoped;
-    // TODO
 }
 
 FragVertex Rasterizer::interpolateVertex(FragVertex &top,
@@ -365,13 +342,15 @@ void Rasterizer::scanLine(FragVertex &left, FragVertex &right,
     ZoneScoped;
     int initialX = std::ceil(left.position.x);
     int finalX   = std::ceil(right.position.x);
+
+
     for (int x = initialX; x < finalX; x++) {
         float t = (x - left.position.x)
                   / (right.position.x - left.position.x);
         FragVertex interpolated
             = FragVertex::interpolate(left, right, t);
         interpolated.finish();
-        Pixel pixel = program->fragmentShader(interpolated);
+        Pixel pixel = program->fragmentShader(interpolated, interpolated.duv);
         ColorPixel color(pixel.color);
         DepthPixel depth(pixel.depth);
         renderTarget->checkAndSetPixel(x, y, color, depth);

@@ -46,12 +46,6 @@ class Rasterizer {
                              FragVertex &vertex2);
     void drawFlatBottomTriangle(FragVertex &top, FragVertex &botL,
                                 FragVertex &botR);
-    void drawFlatTopTriangleWireframe(FragVertex &topL,
-                                      FragVertex &vertex1,
-                                      FragVertex &vertex2);
-    void drawFlatBottomTriangleWireframe(FragVertex &top,
-                                         FragVertex &botL,
-                                         FragVertex &botR);
     FragVertex interpolateVertex(FragVertex &top, FragVertex &bottom,
                                  float y);
     void scanLine(FragVertex &left, FragVertex &right, int y);

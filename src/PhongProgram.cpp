@@ -1,18 +1,20 @@
 #include "PhongProgram.h"
+#include "glm/fwd.hpp"
+#include <cstdio>
 
 FragVertex PhongProgram::vertexShader(const Vertex &vertex) const {
     return {getProjectionMatrix() * getViewMatrix() * getModelMatrix()
-                * vertex.position,
+            * vertex.position,
             getModelMatrix() * vertex.position,
             glm::normalize(getNormalMatrix() * vertex.normal),
             vertex.texture, glm::vec4(0.0, 0.0, 0.0, 0.0)};
 }
 
-Pixel PhongProgram::fragmentShader(FragVertex &vertex) {
+Pixel PhongProgram::fragmentShader(FragVertex &vertex, glm::vec2 deltaUv) {
     // Phong shading
     // return {glm::vec3(vertex.uv, 0), vertex.position.z};
     glm::vec3 lightDir = glm::normalize(glm::vec3(1.0, 1.0, 1.0));
-    glm::vec3 normal   = glm::normalize(vertex.normal);
+    glm::vec3 normal = glm::normalize(vertex.normal);
     const Material &material = getMaterial();
 
     float diffuse = glm::max(glm::dot(normal, lightDir), 0.0f);
@@ -21,9 +23,10 @@ Pixel PhongProgram::fragmentShader(FragVertex &vertex) {
     if (material.diffTexture.has_value()) {
         const Texture &tex = material.diffTexture.value();
         const ColorPixel cp
-            = tex.samplePoint(vertex.uv.x, vertex.uv.y, 0.f, 0.f);
+                = tex.samplePoint(vertex.uv.x, vertex.uv.y, deltaUv.s, deltaUv.t);
         diffuseColor = cp.toVec3() * diffuse;
         ambientColor = material.ambient * cp.toVec3();
+//        printf("deltaUv: %f %f\n", deltaUv.s, deltaUv.t);
     } else {
         diffuseColor = material.diffuse * diffuse;
         ambientColor = material.ambient;

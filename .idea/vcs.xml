@@ -2,9 +2,13 @@
 <project version="4">
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/stb-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/cmake-build-debug/_deps/tracy-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-release-with-profiler/_deps/stb-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/cmake-build-release-with-profiler/_deps/tracy-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-release/_deps/stb-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/cmake-build-release/_deps/tracy-src" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/cmake-build-relwithdebinfo/_deps/stb-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/cmake-build-relwithdebinfo/_deps/tracy-src" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/external/glm" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/external/glm/external/imgui" vcs="Git" />

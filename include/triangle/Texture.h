@@ -23,7 +23,13 @@ class Texture {
     Texture &operator=(const Texture &) = default;
     ~Texture();
 
-  private:
+    std::string getTexturePath();
+
+    bool hasMipmaps();
+
+    int getMipmaps();
+
+private:
     std::shared_ptr<TextureBuffer> textureData;
     int mipLevels = 0;
     int height, width;
@@ -32,17 +38,18 @@ class Texture {
     std::vector<int> mipmapOffset;
     std::vector<int> mipmapWidths;
     GLuint textureIndex;
+    std::string path = "NO PATH";
 
   public:
     inline ColorPixel getTexel(int x, int y, int level) const {
         const int pos = getPos(x, y, level);
-        assert(pos < textureData->size());
+       assert(pos < textureData->size());
         return textureData->at(pos);
     }
-    inline int getHeight() { return height; }
-    inline int getWidth() { return width; }
-    inline int getMipLevels() { return mipLevels; }
-    inline TextureSampler getTextureSampler() {
+    inline int getHeight() const { return height; }
+    inline int getWidth() const { return width; }
+    inline int getMipLevels() const { return mipLevels; }
+    inline TextureSampler getTextureSampler() const {
         return textureSamplerType;
     }
     inline void setTextureSampler(TextureSampler ts) {
@@ -68,20 +75,24 @@ class Texture {
     inline int getBaseSize() { return width * height; }
     inline int getTotalSize() { return 2 * getBaseSize(); }
     inline int getPos(int x, int y, int level) const {
-        return getLevelOffset(level) + mipmapWidths.at(level) * y + x;
+        assert(level < mipLevels && level >= 0);
+        int x_ = x % getLevelWidht(level);
+        int y_ = y % getLevelHeight(level);
+
+        return getLevelOffset(level) + mipmapWidths.at(level) * y_ + x_;
     }
     inline int getLevelOffset(int level) const {
         assert(level < mipLevels && level >= 0);
         return mipmapOffset.at(level);
     }
-    inline int getLevelWidht(int level) {
+    inline int getLevelWidht(int level) const {
         if (level == 0) {
             return width;
         } else {
             return (getLevelWidht(level - 1) / 2);
         }
     }
-    inline int getLevelHeight(int level) {
+    inline int getLevelHeight(int level) const {
         if (level == 0) {
             return height;
         } else {
