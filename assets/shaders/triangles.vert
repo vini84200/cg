@@ -2,6 +2,7 @@
 
 layout (location = 0) in vec4 position;
 layout (location = 1) in vec3 normal;
+layout (location = 2) in vec2 texCoord;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -13,6 +14,8 @@ struct Material {
     vec3 specularColor;
     vec3 ambientColor;
     float shine;
+    int hasDiffTexture;
+    sampler2D diffTexture;
 };
 
 uniform Material material;
@@ -20,6 +23,7 @@ uniform Material material;
 out vec4 vertexColor;
 out vec3 fragPos;
 out vec4 normalFrag;
+out vec2 textureCoord;
 
 subroutine vec3 LightModel(Material material, vec3 normal, vec3 lightDir, vec3 viewDir);
 
@@ -27,7 +31,7 @@ subroutine uniform LightModel lightModelVS;
 
 subroutine (LightModel) vec3 noShade(Material material, vec3 normal, vec3 lightDir, vec3 viewDir)
 {
-    vec3 diffuse = material.diffuseColor;
+    vec3 diffuse = material.hasDiffTexture == 1 ? vec3(1.f, 1.f, 1.f) : material.diffuseColor;
 //    return vec3(1.0f, 0.0f, 0.0f);
     return diffuse;
 }
@@ -35,7 +39,16 @@ subroutine (LightModel) vec3 noShade(Material material, vec3 normal, vec3 lightD
 subroutine (LightModel) vec3 gouroudAD(Material material, vec3 normal, vec3 lightDir, vec3 viewDir)
 {
     vec3 ambient = material.ambientColor;
-    vec3 diffuse = material.diffuseColor * max(dot(normal, lightDir), 0.0f);
+    float diff = max(dot(normal, lightDir), 0.0f);
+    vec3 diffuse;
+    if (material.hasDiffTexture == 1)
+    {
+        diffuse = vec3(1.f, 1.f, 1.f) * diff;
+    }
+    else
+    {
+        diffuse = material.diffuseColor * diff;
+    }
 //    return vec3(normal);
     return ambient + diffuse;
 }
@@ -48,7 +61,16 @@ subroutine (LightModel) vec3 gouroudADS(Material material, vec3 normal, vec3 lig
     vec3 vd = vec3(0.0f, 0.0f, 1.0f);
 
     vec3 ambient = material.ambientColor;
-    vec3 diffuse = material.diffuseColor * max(dot(normal, ld), 0.0f);
+    float diff = max(dot(normal, lightDir), 0.0f);
+    vec3 diffuse;
+    if (material.hasDiffTexture == 1)
+    {
+        diffuse = vec3(1.f, 1.f, 1.f) * diff;
+    }
+    else
+    {
+        diffuse = material.diffuseColor * diff;
+    }
     float energyConservation = (material.shine + 8.0f) / (8.0f * 3.14159f);
     vec3 halfDir = normalize(ld + vd);
     vec3 specular = max(vec3(0,0,0), material.specularColor * pow(max(dot(normal, halfDir), 0.0f), material.shine) * energyConservation);
@@ -67,4 +89,5 @@ void main()
     fragPos = vec3(model * position);
     vertexColor = vec4(lightModelVS(material, normalize( mat3(inverse(transpose(view * model))) * normal), vec3(0.0f, 0.8f, 0.2f), normalize(viewPos - fragPos)), 1.0f);
     normalFrag  = vec4(normal, 0.0f);
+    textureCoord = texCoord;
 }

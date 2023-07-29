@@ -143,6 +143,15 @@ void RendererSimple::renderObject(std::shared_ptr<Object> object) {
                     glGetUniformLocation(program, "material.shine"),
                     m->shine);
             }
+
+            if (m->diffTexture.has_value()) {
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, m->diffTexture.value().getTextureIndex());
+                glUniform1i(glGetUniformLocation(program, "material.diffTexture"), 0);
+                glUniform1i(glGetUniformLocation(program, "material.hasDiffTexture"), 1);
+            } else {
+                glUniform1i(glGetUniformLocation(program, "material.hasDiffTexture"), 0);
+            }
         }
 
         GLsizei subroutineLocations

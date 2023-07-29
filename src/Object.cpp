@@ -100,8 +100,8 @@ void Object::initVAO() {
         normals[i * 3 + 1] = originalVertices[i].normal.y;
         normals[i * 3 + 2] = originalVertices[i].normal.z;
 
-        textures[i * 2]     = originalVertices[i].texture.x;
-        textures[i * 2 + 1] = originalVertices[i].texture.y;
+        textures[i * 2]     = originalVertices[i].texture.s;
+        textures[i * 2 + 1] = originalVertices[i].texture.t;
     }
 
     glGenBuffers(NumBuffers, getBuffers(ModelSpace));
@@ -128,6 +128,11 @@ void Object::initVAO() {
     glBindBuffer(GL_ARRAY_BUFFER, getBuffers(0)[TextureCoordBuffer]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(textures), textures,
                  GL_STATIC_DRAW);
+
+    glVertexAttribPointer(vTextureCoord, 2, GL_FLOAT, GL_FALSE, 0,
+                          BUFFER_OFFSET(0));
+    glEnableVertexAttribArray(vTextureCoord);
+
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 

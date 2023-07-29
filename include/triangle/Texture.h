@@ -52,9 +52,7 @@ private:
     inline TextureSampler getTextureSampler() const {
         return textureSamplerType;
     }
-    inline void setTextureSampler(TextureSampler ts) {
-        textureSamplerType = ts;
-    }
+    void setTextureSampler(TextureSampler ts);
     inline GLuint getTextureIndex() { return textureIndex; }
     inline ImTextureID getTextureId() {
         return (ImTextureID)textureIndex;
