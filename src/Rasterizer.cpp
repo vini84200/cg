@@ -325,7 +325,6 @@ void Rasterizer::drawFlatBottomTriangle(FragVertex &top,
 FragVertex Rasterizer::interpolateVertex(FragVertex &top,
                                          FragVertex &bottom,
                                          float y) {
-    // FIXME: For now use a simple linear interpolation
     assert(top.position.y <= y);
     assert(bottom.position.y >= y);
     assert(top.position.y != bottom.position.y);

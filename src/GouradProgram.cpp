@@ -29,9 +29,16 @@ FragVertex GouradProgram::vertexShader(const Vertex &vertex) const {
           * energyConservation;
 
 
-    glm::vec3 color = diffuse * material.diffuse
-                      + ambient * material.ambient
-                      + specular * material.specular;
+    glm::vec3 color;
+    if (material.diffTexture.has_value()) {
+        color = diffuse * glm::vec3(1.f, 1.f, 1.f)
+                + ambient * material.ambient
+                + specular * material.specular;
+    } else {
+        color = diffuse * material.diffuse
+                + ambient * material.ambient
+                + specular * material.specular;
+    }
     color = glm::clamp(color, 0.0f, 1.0f);
 
     return {
@@ -45,6 +52,12 @@ FragVertex GouradProgram::vertexShader(const Vertex &vertex) const {
 
 Pixel GouradProgram::fragmentShader(FragVertex &vertex, glm::vec2 deltaUv) {
     ZoneScoped;
+    if (getMaterial().diffTexture.has_value()) {
+        const Texture &tex = getMaterial().diffTexture.value();
+        const ColorPixel cp
+            = tex.samplePoint(vertex.uv.x, vertex.uv.y, deltaUv.s, deltaUv.t);
+        return {cp.toVec4() * vertex.color, vertex.position.z};
+    }
     return {vertex.color, vertex.position.z};
 }
 
