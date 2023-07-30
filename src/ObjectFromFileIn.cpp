@@ -3,6 +3,7 @@
 //
 
 #include "ObjectFromFileIn.h"
+#include "Material.h"
 #include "Object.h"
 #include "imgui.h"
 #include <cassert>

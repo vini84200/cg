@@ -46,11 +46,10 @@ class Rasterizer {
                              FragVertex &vertex2);
     void drawFlatBottomTriangle(FragVertex &top, FragVertex &botL,
                                 FragVertex &botR);
-    FragVertex interpolateVertex(FragVertex &top, FragVertex &bottom,
-                                 float y);
-    void scanLine(FragVertex &left, FragVertex &right, int y);
-    void scanLineWireframe(FragVertex &left, FragVertex &right,
-                           int y);
+    FragVertex interpolateVertex(FragVertex &top, FragVertex &bottom, float y);
+    void scanLine(const FragVertex &left, const FragVertex &right, int y,
+                  const FragVertex &dFdyLeft, const FragVertex &dFdyRight);
+    void scanLineWireframe(FragVertex &left, FragVertex &right, int y);
 
     C2GLProgram *program;
     bool ccw;

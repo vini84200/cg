@@ -29,12 +29,13 @@ class Texture {
 
     int getMipmaps();
 
-private:
+    float getLevel(glm::vec2 dUVdx, glm::vec2 dUVdy) const;
+
+  private:
     std::shared_ptr<TextureBuffer> textureData;
     int mipLevels = 0;
     int height, width;
-    TextureSampler textureSamplerType
-        = TextureSampler::NearestNeighbour;
+    TextureSampler textureSamplerType = TextureSampler::NearestNeighbour;
     std::vector<int> mipmapOffset;
     std::vector<int> mipmapWidths;
     GLuint textureIndex;
@@ -54,26 +55,26 @@ private:
     }
     void setTextureSampler(TextureSampler ts);
     inline GLuint getTextureIndex() { return textureIndex; }
-    inline ImTextureID getTextureId() {
-        return (ImTextureID)textureIndex;
-    }
+    inline ImTextureID getTextureId() { return (ImTextureID)textureIndex; }
     void generateMipMaps(int levels);
-    ColorPixel samplePoint(float s, float t, float ds,
-                           float dt) const;
+    ColorPixel samplePoint(float s, float t, const glm::vec2 &dUVdx,
+                           const glm::vec2 &dUVdy) const;
 
   private:
     // Private methods
     ColorPixel samplePointNearestNeighbour(float s, float t) const;
     ColorPixel samplePointBilinear(float s, float t) const;
-    ColorPixel samplePointTrilinear(float s, float t, float ds,
-                                    float dt) const;
+    ColorPixel samplePointTrilinear(float s, float t, glm::vec2 dUVdx,
+                                    glm::vec2 dUVdy) const;
 
     // Inline
   private:
     inline int getBaseSize() { return width * height; }
     inline int getTotalSize() { return 2 * getBaseSize(); }
     inline int getPos(int x, int y, int level) const {
-        assert(level < mipLevels && level >= 0);
+        if (level >= mipLevels) {
+            level = mipLevels - 1;
+        }
         int x_ = x % getLevelWidht(level);
         int y_ = y % getLevelHeight(level);
 

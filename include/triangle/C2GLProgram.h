@@ -5,54 +5,40 @@
 #ifndef TRIANGLE_C2GLPROGRAM_H
 #define TRIANGLE_C2GLPROGRAM_H
 
+#include "Material.h"
 #include "Object.h"
 #include "glm/fwd.hpp"
 #include "glm/glm.hpp"
 #include <cwchar>
-
 
 struct FragVertex {
     glm::vec4 position;
     glm::vec4 positionWorld;
     glm::vec3 normal;
     glm::vec2 uv;
-    glm::vec2 duv;
     glm::vec4 color;
 
     float wInv;
 
-    static FragVertex interpolate(FragVertex v1, FragVertex v2,
-                                  float t) {
-        return FragVertex(v1.position * (1 - t) + v2.position * t,
-                          v1.positionWorld * (1 - t)
-                              + v2.positionWorld * t,
-                          v1.normal * (1 - t) + v2.normal * t,
-                          v1.uv * (1 - t) + v2.uv * t,
-                          v1.duv * (1 - t) + v2.duv * t,
-                          v1.color * (1 - t) + v2.color * t,
-                          v1.wInv * (1 - t) + v2.wInv * t);
+    static FragVertex interpolate(FragVertex v1, FragVertex v2, float t) {
+        return FragVertex(
+            v1.position * (1 - t) + v2.position * t,
+            v1.positionWorld * (1 - t) + v2.positionWorld * t,
+            v1.normal * (1 - t) + v2.normal * t, v1.uv * (1 - t) + v2.uv * t,
+            v1.color * (1 - t) + v2.color * t, v1.wInv * (1 - t) + v2.wInv * t);
     }
 
     FragVertex() = default;
 
-    FragVertex(glm::vec4 position, glm::vec4 positionWorld,
-               glm::vec3 normal, glm::vec2 uv, glm::vec4 color)
-              : position(position), normal(normal), uv(uv), wInv{1.0},
-                color(color), positionWorld(positionWorld){};
+    FragVertex(glm::vec4 position, glm::vec4 positionWorld, glm::vec3 normal,
+               glm::vec2 uv, glm::vec4 color)
+        : position(position), normal(normal), uv(uv), wInv{1.0}, color(color),
+          positionWorld(positionWorld){};
 
-    FragVertex(glm::vec4 position, glm::vec4 positionWorld,
-               glm::vec3 normal, glm::vec2 uv, glm::vec2 duv,
-               glm::vec4 color)
-              : position(position), normal(normal), uv(uv), wInv{1.0},
-                color(color), positionWorld(positionWorld),
-                duv(duv){};
-
-    FragVertex(glm::vec4 position, glm::vec4 positionWorld,
-               glm::vec3 normal, glm::vec2 uv, glm::vec2 duv,
-               glm::vec4 color, float wInv)
-              : position(position), normal(normal), uv(uv),
-                wInv{wInv}, color(color),
-                positionWorld(positionWorld), duv(duv){};
+    FragVertex(glm::vec4 position, glm::vec4 positionWorld, glm::vec3 normal,
+               glm::vec2 uv, glm::vec4 color, float wInv)
+        : position(position), normal(normal), uv(uv), wInv{wInv}, color(color),
+          positionWorld(positionWorld){};
 
     void perpectiveDivide() {
         float w = position.w;
@@ -60,15 +46,43 @@ struct FragVertex {
         positionWorld /= w;
         normal /= w;
         uv /= w;
-        duv /= w;
         wInv = 1.0f / w;
     }
 
     void finish() {
         normal /= wInv;
         uv /= wInv;
-        duv /= wInv;
         positionWorld /= wInv;
+    }
+    static FragVertex getDeltaY(FragVertex &top, FragVertex &bot) {
+        float dy = top.position.y - bot.position.y;
+        return FragVertex((top.position - bot.position) / dy,
+                          (top.positionWorld - bot.positionWorld) / dy,
+                          (top.normal - bot.normal) / dy,
+                          (top.uv - bot.uv) / dy, (top.color - bot.color) / dy,
+                          (top.wInv - bot.wInv) / dy);
+    }
+    static FragVertex add(FragVertex a, FragVertex b) {
+        return FragVertex(a.position + b.position,
+                          a.positionWorld + b.positionWorld,
+                          a.normal + b.normal, a.uv + b.uv, a.color + b.color,
+                          a.wInv + b.wInv);
+    }
+    FragVertex operator*(const float t) const {
+        return FragVertex(position * t, positionWorld * t, normal * t, uv * t,
+                          color * t, wInv * t);
+    }
+    FragVertex operator+(const FragVertex other) const {
+        return FragVertex::add(*this, other);
+    }
+    static FragVertex getDeltaX(const FragVertex &left,
+                                const FragVertex &right) {
+        float dx = right.position.x - left.position.x;
+        return FragVertex(
+            (right.position - left.position) / dx,
+            (right.positionWorld - left.positionWorld) / dx,
+            (right.normal - left.normal) / dx, (right.uv - left.uv) / dx,
+            (right.color - left.color) / dx, (right.wInv - left.wInv) / dx);
     }
 };
 
@@ -103,7 +117,9 @@ class C2GLProgram {
   public:
     virtual FragVertex vertexShader(const Vertex &vertex) const = 0;
 
-    virtual Pixel fragmentShader(FragVertex &vertex, glm::vec2 deltaUv) = 0;
+    virtual Pixel fragmentShader(const FragVertex &vertex,
+                                 const FragVertex &dFdx,
+                                 const FragVertex &dFdy) const = 0;
 
     const glm::vec4 &getViewPos() const;
 
@@ -113,6 +129,5 @@ class C2GLProgram {
 
     virtual void updateNormalMatrix();
 };
-
 
 #endif // TRIANGLE_C2GLPROGRAM_H

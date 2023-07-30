@@ -6,6 +6,7 @@
 #include "C2GLProgram.h"
 #include "GLFW/glfw3.h"
 #include "GouradProgram.h"
+#include "Material.h"
 #include "Object.h"
 #include "PhongProgram.h"
 #include "Rasterizer.h"

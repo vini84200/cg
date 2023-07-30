@@ -5,10 +5,9 @@
 #ifndef TRIANGLE_OBJECTFROMFILEIN_H
 #define TRIANGLE_OBJECTFROMFILEIN_H
 
-
+#include "Material.h"
 #include "Object.h"
 #include <vector>
-
 
 class ObjectFromFileIn : public Object {
   public:

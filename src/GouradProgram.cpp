@@ -1,4 +1,5 @@
 #include "GouradProgram.h"
+#include "Material.h"
 #include "Object.h"
 #include "glm/common.hpp"
 #include "glm/fwd.hpp"
@@ -50,12 +51,14 @@ FragVertex GouradProgram::vertexShader(const Vertex &vertex) const {
     };
 }
 
-Pixel GouradProgram::fragmentShader(FragVertex &vertex, glm::vec2 deltaUv) {
+Pixel GouradProgram::fragmentShader(const FragVertex &vertex,
+                                    const FragVertex &dFdx,
+                                    const FragVertex &dFdy) const {
     ZoneScoped;
     if (getMaterial().diffTexture.has_value()) {
         const Texture &tex = getMaterial().diffTexture.value();
-        const ColorPixel cp
-            = tex.samplePoint(vertex.uv.x, vertex.uv.y, deltaUv.s, deltaUv.t);
+        const ColorPixel cp =
+            tex.samplePoint(vertex.uv.x, vertex.uv.y, dFdx.uv, dFdy.uv);
         return {cp.toVec4() * vertex.color, vertex.position.z};
     }
     return {vertex.color, vertex.position.z};

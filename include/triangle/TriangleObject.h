@@ -5,7 +5,7 @@
 #ifndef TRIANGLE_TRIANGLEOBJECT_H
 #define TRIANGLE_TRIANGLEOBJECT_H
 
-
+#include "Material.h"
 #include "Object.h"
 #include "ObjectFromFileIn.h"
 

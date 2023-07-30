@@ -3,6 +3,7 @@
 //
 
 #include "TriangleObject.h"
+#include "Material.h"
 #include "ObjectFromFileIn.h"
 #include "Window.h"
 #include "imgui.h"

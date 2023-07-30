@@ -3,6 +3,7 @@
 //
 
 #include "C2GLProgram.h"
+#include "Material.h"
 #include "glm/common.hpp"
 #include "glm/fwd.hpp"
 #include "glm/geometric.hpp"

@@ -3,6 +3,7 @@
 //
 
 #include "RendererSimple.h"
+#include "Material.h"
 #include "Object.h"
 #include "imgui.h"
 #include "loadShader/LoadShaders.h"

@@ -16,8 +16,7 @@
 #include <tracy/Tracy.hpp>
 #include <vector>
 
-void Rasterizer::preSortTriangleVertices(
-    std::vector<FragVertex> &vertices) {
+void Rasterizer::preSortTriangleVertices(std::vector<FragVertex> &vertices) {
     int numTriangles = vertices.size() / 3;
     for (int tri = 0; tri < numTriangles; tri++) {
         FragVertex &v1 = vertices[tri * 3];
@@ -48,8 +47,7 @@ void Rasterizer::renderObject(Object *object) {
     verticesTempBuffer.clear();
     verticesTempBuffer.reserve(object->getNumVertices());
 
-    const std::vector<Vertex> &vertices
-        = object->getOriginalVertices();
+    const std::vector<Vertex> &vertices = object->getOriginalVertices();
 
     // PHASE 1: Run vertex shader
     for (int i = 0; i < object->getNumVertices(); i += 3) {
@@ -67,18 +65,15 @@ void Rasterizer::renderObject(Object *object) {
         for (int j = 0; j < 3; j++) {
             FragVertex &vertex = triangle[j];
             bool isInFront     = vertex.position.w > 0;
-            bool isOutsideInX
-                = vertex.position.x < -vertex.position.w
-                  || vertex.position.x > vertex.position.w;
-            bool isOutsideInY
-                = vertex.position.y < -vertex.position.w
-                  || vertex.position.y > vertex.position.w;
-            bool isOutsideInZ
-                = vertex.position.z < -vertex.position.w
-                  || vertex.position.z > vertex.position.w;
+            bool isOutsideInX  = vertex.position.x < -vertex.position.w ||
+                                vertex.position.x > vertex.position.w;
+            bool isOutsideInY = vertex.position.y < -vertex.position.w ||
+                                vertex.position.y > vertex.position.w;
+            bool isOutsideInZ = vertex.position.z < -vertex.position.w ||
+                                vertex.position.z > vertex.position.w;
 
-            isTriangleCulled |= !isInFront || isOutsideInX
-                                || isOutsideInY || isOutsideInZ;
+            isTriangleCulled |=
+                !isInFront || isOutsideInX || isOutsideInY || isOutsideInZ;
             if (isTriangleCulled) {
                 break;
             }
@@ -118,8 +113,8 @@ void Rasterizer::renderObject(Object *object) {
             FragVertex &vertex = triangle[j];
 
             // Do viewport transform
-            vertex.position
-                = renderTarget->getViewportMatrix() * vertex.position;
+            vertex.position =
+                renderTarget->getViewportMatrix() * vertex.position;
 
             // Save the vertex to the temp buffer
             verticesTempBuffer.push_back(vertex);
@@ -154,8 +149,7 @@ void Rasterizer::renderObject(Object *object) {
     }
 }
 
-void Rasterizer::drawWireframeTriangle(FragVertex &top,
-                                       FragVertex &mid,
+void Rasterizer::drawWireframeTriangle(FragVertex &top, FragVertex &mid,
                                        FragVertex &bot) {
     ZoneScoped;
     // Draw three lines
@@ -181,14 +175,15 @@ void Rasterizer::drawLine(FragVertex &start, FragVertex &end) {
     FragVertex vertex = start;
 
     while (x0 != x1 || y0 != y1) {
-        float t = (((float)x0) - start.position.x)
-                  / (end.position.x - start.position.x);
+        float t = (((float)x0) - start.position.x) /
+                  (end.position.x - start.position.x);
         vertex = FragVertex::interpolate(start, end, t);
         vertex.finish();
-        Pixel pixel = program->fragmentShader(vertex, glm::vec2());
+        Pixel pixel =
+            program->fragmentShader(vertex, FragVertex(), FragVertex());
 
-        renderTarget->checkAndSetPixel(
-            x0, y0, ColorPixel(pixel.color), DepthPixel(pixel.depth));
+        renderTarget->checkAndSetPixel(x0, y0, ColorPixel(pixel.color),
+                                       DepthPixel(pixel.depth));
 
         e2 = err;
         if (e2 > -dx) {
@@ -207,29 +202,27 @@ void Rasterizer::drawPointsTriangle(FragVertex &top, FragVertex &mid,
     // Set three points
     // Top
     top.finish();
-    Pixel pixel = program->fragmentShader(top, glm::vec2());
+    Pixel pixel = program->fragmentShader(top, FragVertex(), FragVertex());
     ColorPixel color(pixel.color);
     DepthPixel depth(pixel.depth);
     renderTarget->checkAndSetPixel(std::ceil(top.position.x),
-                                   std::ceil(top.position.y), color,
-                                   depth);
+                                   std::ceil(top.position.y), color, depth);
 
     mid.finish();
-    pixel = program->fragmentShader(mid, glm::vec2());
+    pixel = program->fragmentShader(mid, FragVertex(), FragVertex());
     color = ColorPixel(pixel.color);
     depth = DepthPixel(pixel.depth);
     renderTarget->checkAndSetPixel(std::ceil(mid.position.x),
-                                   std::ceil(mid.position.y), color,
-                                   depth);
+                                   std::ceil(mid.position.y), color, depth);
 
     bot.finish();
-    pixel = program->fragmentShader(bot, glm::vec2());
+    pixel = program->fragmentShader(bot, FragVertex(), FragVertex());
     color = ColorPixel(pixel.color);
     depth = DepthPixel(pixel.depth);
     renderTarget->checkAndSetPixel(std::ceil(bot.position.x),
-                                   std::ceil(bot.position.y), color,
-                                   depth);
+                                   std::ceil(bot.position.y), color, depth);
 }
+
 void Rasterizer::drawTriangle(FragVertex &top, FragVertex &mid,
                               FragVertex &bot) {
     ZoneScoped;
@@ -256,22 +249,20 @@ void Rasterizer::drawTriangle(FragVertex &top, FragVertex &mid,
 
         // Check if the triangle is a left or right triangle
         // using edge equations
-        glm::vec2 a_to_b
-            = glm::normalize(top.position - bot.position);
-        glm::vec2 w = glm::vec2(a_to_b.y, -a_to_b.x);
-        float edge
-            = glm::dot(w, glm::vec2(mid.position - bot.position));
+        glm::vec2 a_to_b = glm::normalize(top.position - bot.position);
+        glm::vec2 w      = glm::vec2(a_to_b.y, -a_to_b.x);
+        float edge       = glm::dot(w, glm::vec2(mid.position - bot.position));
 
         if (edge > 0) {
             // Left triangle
-            FragVertex intersection
-                = interpolateVertex(top, bot, mid.position.y);
+            FragVertex intersection =
+                interpolateVertex(top, bot, mid.position.y);
             drawFlatBottomTriangle(top, mid, intersection);
             drawFlatTopTriangle(mid, intersection, bot);
         } else if (edge < 0) {
             // Right triangle
-            FragVertex intersection
-                = interpolateVertex(top, bot, mid.position.y);
+            FragVertex intersection =
+                interpolateVertex(top, bot, mid.position.y);
             drawFlatBottomTriangle(top, intersection, mid);
             drawFlatTopTriangle(intersection, mid, bot);
         } else {
@@ -287,92 +278,89 @@ void Rasterizer::drawTriangle(FragVertex &top, FragVertex &mid,
     }
 }
 
-void Rasterizer::drawFlatTopTriangle(FragVertex &topL,
-                                     FragVertex &topR,
+void Rasterizer::drawFlatTopTriangle(FragVertex &topL, FragVertex &topR,
                                      FragVertex &bot) {
     ZoneScoped;
-    int initialY    = std::ceil(topL.position.y);
-    int finalY      = std::ceil(bot.position.y);
-    glm::vec2 deltaUvLeft = (bot.uv - topL.uv) / (bot.position.y - topL.position.y);
-    glm::vec2 deltaUvRight = (bot.uv - topR.uv) / (bot.position.y - topR.position.y);
+    int initialY         = std::ceil(topL.position.y);
+    int finalY           = std::ceil(bot.position.y);
+    FragVertex dFdyLeft  = FragVertex::getDeltaY(topL, bot);
+    FragVertex dFdyRight = FragVertex::getDeltaY(topR, bot);
+    FragVertex left      = topL + dFdyLeft * (initialY - topL.position.y);
+    FragVertex right     = topR + dFdyRight * (initialY - topR.position.y);
 
     for (int y = initialY; y < finalY; y++) {
-        FragVertex left  = interpolateVertex(topL, bot, y);
-        FragVertex right = interpolateVertex(topR, bot, y);
-        left.duv = deltaUvLeft;
-        right.duv = deltaUvRight;
-        scanLine(left, right, y);
+        scanLine(left, right, y, dFdyLeft, dFdyRight);
+        left  = FragVertex::add(left, dFdyLeft);
+        right = FragVertex::add(right, dFdyRight);
     }
 }
 
-void Rasterizer::drawFlatBottomTriangle(FragVertex &top,
-                                        FragVertex &botL,
+void Rasterizer::drawFlatBottomTriangle(FragVertex &top, FragVertex &botL,
                                         FragVertex &botR) {
     ZoneScoped;
-    int initialY    = std::ceil(top.position.y);
-    int finalY      = std::ceil(botL.position.y);
-    glm::vec2 deltaUvLeft = (botL.uv - top.uv) / (botL.position.y - top.position.y);
-    glm::vec2 deltaUvRight = (botR.uv - top.uv) / (botR.position.y - top.position.y);
+    int initialY         = std::ceil(top.position.y);
+    int finalY           = std::ceil(botL.position.y);
+    FragVertex dFdyLeft  = FragVertex::getDeltaY(top, botL);
+    FragVertex dFdyRight = FragVertex::getDeltaY(top, botR);
+    FragVertex left      = top + dFdyLeft * (initialY - top.position.y);
+    FragVertex right     = top + dFdyRight * (initialY - top.position.y);
     for (int y = initialY; y < finalY; y++) {
-        FragVertex left  = interpolateVertex(top, botL, y);
-        FragVertex right = interpolateVertex(top, botR, y);
-        left.duv = deltaUvLeft;
-        right.duv = deltaUvRight;
-        scanLine(left, right, y);
+        scanLine(left, right, y, dFdyLeft, dFdyRight);
+        left  = FragVertex::add(left, dFdyLeft);
+        right = FragVertex::add(right, dFdyRight);
     }
 }
 
-FragVertex Rasterizer::interpolateVertex(FragVertex &top,
-                                         FragVertex &bottom,
+FragVertex Rasterizer::interpolateVertex(FragVertex &top, FragVertex &bottom,
                                          float y) {
     assert(top.position.y <= y);
     assert(bottom.position.y >= y);
     assert(top.position.y != bottom.position.y);
-    float t
-        = (y - top.position.y) / (bottom.position.y - top.position.y);
+    float t = (y - top.position.y) / (bottom.position.y - top.position.y);
     FragVertex interpolated = FragVertex::interpolate(top, bottom, t);
     assert(glm::epsilonEqual(interpolated.position.y, y, 0.01f));
     interpolated.position.y = y;
     return interpolated;
 }
 
-void Rasterizer::scanLine(FragVertex &left, FragVertex &right,
-                          int y) {
+void Rasterizer::scanLine(const FragVertex &left, const FragVertex &right,
+                          int y, const FragVertex &dFdyLeft,
+                          const FragVertex &dFdyRight) {
     ZoneScoped;
-    int initialX = std::ceil(left.position.x);
-    int finalX   = std::ceil(right.position.x);
-
-
+    int initialX            = std::ceil(left.position.x);
+    int finalX              = std::ceil(right.position.x);
+    FragVertex dFdx         = FragVertex::getDeltaX(left, right);
+    FragVertex current      = left + dFdx * (initialX - left.position.x);
+    const FragVertex dFdydx = FragVertex::getDeltaX(dFdyLeft, dFdyRight);
+    FragVertex dFdyCurrent  = dFdyLeft + dFdydx * (initialX - left.position.x);
+    FragVertex interpolated{}, interpolateddFdy{}, interpolateddFdx{};
     for (int x = initialX; x < finalX; x++) {
-        float t = (x - left.position.x)
-                  / (right.position.x - left.position.x);
-        FragVertex interpolated
-            = FragVertex::interpolate(left, right, t);
+        interpolated          = current;
+        interpolateddFdy      = dFdyCurrent;
+        interpolateddFdy.wInv = interpolated.wInv;
+        interpolateddFdx      = dFdx;
+        interpolateddFdx.wInv = interpolated.wInv;
         interpolated.finish();
-        Pixel pixel = program->fragmentShader(interpolated, interpolated.duv);
+        interpolateddFdy.finish();
+        interpolateddFdx.finish();
+        Pixel pixel = program->fragmentShader(interpolated, interpolateddFdx,
+                                              interpolateddFdy);
         ColorPixel color(pixel.color);
         DepthPixel depth(pixel.depth);
         renderTarget->checkAndSetPixel(x, y, color, depth);
+
+        current     = FragVertex::add(current, dFdx);
+        dFdyCurrent = FragVertex::add(dFdyCurrent, dFdydx);
     }
 }
 
-void Rasterizer::scanLineWireframe(FragVertex &left,
-                                   FragVertex &right, int y) {
-    ZoneScoped;
-    // TODO: Implement
-}
-
-Rasterizer::RasterizerMode Rasterizer::getMode() const {
-    return mode;
-}
+Rasterizer::RasterizerMode Rasterizer::getMode() const { return mode; }
 
 void Rasterizer::setMode(Rasterizer::RasterizerMode mode) {
     Rasterizer::mode = mode;
 }
 
-RenderTarget *Rasterizer::getRenderTarget() const {
-    return renderTarget;
-}
+RenderTarget *Rasterizer::getRenderTarget() const { return renderTarget; }
 
 void Rasterizer::setRenderTarget(RenderTarget *renderTarget) {
     Rasterizer::renderTarget = renderTarget;
